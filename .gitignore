@@ -1,0 +1,6 @@
+build/
+*.pdf
+*.png
+*.swo
+*.swp
+*.#*
