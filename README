@@ -1,0 +1,3 @@
+# extract page from pdf
+sudo apt install pdftk
+pdftk input.pdf cat 37 output page37.pdf
