@@ -17,28 +17,32 @@ def normalize(arr):
 
 img_orig = cv2.imread(sys.argv[1],0)
 
-arr = \
-[[10,10,10,10,00,00,10,10,10,10],
- [10,10,10,10,00,00,10,10,10,10],
- [10,10,10,10,00,00,10,10,10,10],
- [10,10,10,15,15,15,15,10,10,10],
- [00,00,00,15,40,40,15,00,00,00],
- [00,00,00,15,40,40,15,00,00,00],
- [10,10,10,15,15,15,15,10,10,10],
- [10,10,10,10,00,00,10,10,10,10],
- [10,10,10,10,00,00,10,10,10,10],
- [10,10,10,10,00,00,10,10,10,10]
-]
-arr = normalize(arr)
+def pre_smooth(img):
+    arr = \
+    [[10,10,10,10,00,00,10,10,10,10],
+    [10,10,10,10,00,00,10,10,10,10],
+    [10,10,10,10,00,00,10,10,10,10],
+    [10,10,10,15,15,15,15,10,10,10],
+    [00,00,00,15,40,40,15,00,00,00],
+    [00,00,00,15,40,40,15,00,00,00],
+    [10,10,10,15,15,15,15,10,10,10],
+    [10,10,10,10,00,00,10,10,10,10],
+    [10,10,10,10,00,00,10,10,10,10],
+    [10,10,10,10,00,00,10,10,10,10]
+    ]
+    arr = normalize(arr)
+    kernel = np.array(arr)
+    img_smooth = cv2.filter2D(img_orig,-1,kernel)
+    return img_smooth
+
+def pre_thresh(img):
+    thresh_val = 200
+    ret,img_thresh = cv2.threshold(img_smooth,thresh_val,255,cv2.THRESH_BINARY)
+    return img_thresh
 
 
-kernel = np.array(arr)
-#kernel = np.ones((10,10),np.float32)/(100)
-
-img_smooth = cv2.filter2D(img_orig,-1,kernel)
-
-thresh_val = 200
-ret,img_thresh = cv2.threshold(img_smooth,thresh_val,255,cv2.THRESH_BINARY)
+img_smooth = pre_smooth(img_orig)
+img_thresh = pre_thresh(img_smooth)
 
 img_before_contours = img_thresh
 contours, hierarchy = cv2.findContours(img_before_contours,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
