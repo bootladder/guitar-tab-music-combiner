@@ -76,15 +76,65 @@ def do_cool_stuff(img):
     return img_blank
 
 
+def remove_lines(img):
+    arr = \
+    [
+    [10,10,10,10,10,10,10,10,10,10],
+    [10,10,10,10,10,10,10,10,10,10],
+    [10,10,10,10,10,10,10,10,10,10],
+    [10,10,10,10,10,10,10,10,10,10],
+    [-90,-90,-90,-90,-90,-90,-90,-90,-90,-90],
+    [-90,-90,-90,-90,-90,-90,-90,-90,-90,-90],
+    [10,10,10,10,10,10,10,10,10,10],
+    [10,10,10,10,10,10,10,10,10,10],
+    [10,10,10,10,10,10,10,10,10,10],
+    [10,10,10,10,10,10,10,10,10,10]
+    ]
+    arr = normalize(arr)
+    kernel = np.array(arr)
+    return cv2.filter2D(img,-1,kernel)
+
+def remove_lines_vertical(img):
+    arr = \
+    [
+    [10,10,10,10,-200,-200,10,10,10,10],
+    [10,10,10,10,-200,-200,10,10,10,10],
+    [10,10,10,10,-200,-200,10,10,10,10],
+    [10,10,10,10,-200,-200,10,10,10,10],
+    [10,10,10,10,-200,-200,10,10,10,10],
+    [10,10,10,10,-200,-200,10,10,10,10],
+    [10,10,10,10,-200,-200,10,10,10,10],
+    [10,10,10,10,-200,-200,10,10,10,10],
+    [10,10,10,10,-200,-200,10,10,10,10],
+    [10,10,10,10,-200,-200,10,10,10,10]
+    ]
+    arr = normalize(arr)
+    kernel = np.array(arr)
+    return cv2.filter2D(img,-1,kernel)
+
+
+
 #read stuff
 img_orig = cv2.imread(sys.argv[1],0)
 
 #do stuff
+img_remove_lines = remove_lines(img_orig)
+img_remove_lines_vertical = remove_lines_vertical(img_orig)
 img_smooth = pre_smooth(img_orig)
 img_thresh = pre_thresh(img_smooth)
 img_with_contours = do_cool_stuff(img_thresh)
 
-vis = np.concatenate((img_orig, img_smooth,img_thresh, img_with_contours), axis=0)
+concat_images = \
+(
+    img_orig,
+    img_remove_lines,
+    img_remove_lines_vertical,
+    img_smooth,
+    img_thresh,
+    img_with_contours
+)
+
+vis = np.concatenate(concat_images, axis=0)
 
 
 #output stuff
@@ -92,3 +142,18 @@ output = vis
 cv2.imshow('image',output)
 k = cv2.waitKey(0)
 
+
+
+#blah
+#
+#    [
+#    [10,10,10,10,10,10,10,10,10,10],
+#    [10,10,10,10,10,10,10,10,10,10],
+#    [10,10,10,10,10,10,10,10,10,10],
+#    [10,10,10,10,10,10,10,10,10,10],
+#    [10,10,10,10,10,10,10,10,10,10],
+#    [10,10,10,10,10,10,10,10,10,10],
+#    [10,10,10,10,10,10,10,10,10,10],
+#    [10,10,10,10,10,10,10,10,10,10],
+#    [10,10,10,10,10,10,10,10,10,10],
+#    [10,10,10,10,10,10,10,10,10,10]
