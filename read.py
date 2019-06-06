@@ -94,32 +94,37 @@ def remove_lines(img):
     kernel = np.array(arr)
     return cv2.filter2D(img,-1,kernel)
 
-def remove_lines_vertical(img):
-    arr = \
-    [
-    [10,10,10,10,-200,-200,10,10,10,10],
-    [10,10,10,10,-200,-200,10,10,10,10],
-    [10,10,10,10,-200,-200,10,10,10,10],
-    [10,10,10,10,-200,-200,10,10,10,10],
-    [10,10,10,10,-200,-200,10,10,10,10],
-    [10,10,10,10,-200,-200,10,10,10,10],
-    [10,10,10,10,-200,-200,10,10,10,10],
-    [10,10,10,10,-200,-200,10,10,10,10],
-    [10,10,10,10,-200,-200,10,10,10,10],
-    [10,10,10,10,-200,-200,10,10,10,10]
-    ]
-    arr = normalize(arr)
-    kernel = np.array(arr)
-    return cv2.filter2D(img,-1,kernel)
+def remove_lines_horizontal(img):
+    img = ~img  #inverse
+    kernel = np.ones((1,7),np.uint8)
+    eroded = cv2.erode(img,kernel,iterations = 1)
+    return ~eroded  #inverse
 
+def remove_lines_vertical(img):
+    img = ~img  #inverse
+    kernel = np.ones((7,1),np.uint8)
+    eroded = cv2.erode(img,kernel,iterations = 1)
+    return ~eroded  #inverse
+
+def extract_lines_horizontal(img):
+    img = ~img  #inverse
+    kernel = np.ones((1,70),np.uint8)
+    eroded = cv2.erode(img,kernel,iterations = 1)
+    eroded = ~eroded
+    thresh_val = 200
+    ret,img_thresh = cv2.threshold(eroded,thresh_val,255,cv2.THRESH_BINARY)
+    return img_thresh
 
 
 #read stuff
 img_orig = cv2.imread(sys.argv[1],0)
 
 #do stuff
-img_remove_lines = remove_lines(img_orig)
-img_remove_lines_vertical = remove_lines_vertical(img_orig)
+img_inverse = ~img_orig
+img1 = remove_lines_horizontal(img_orig)
+img2 = extract_lines_horizontal(img_orig)
+img3 = remove_lines_vertical(remove_lines_horizontal(img_orig))
+
 img_smooth = pre_smooth(img_orig)
 img_thresh = pre_thresh(img_smooth)
 img_with_contours = do_cool_stuff(img_thresh)
@@ -127,9 +132,9 @@ img_with_contours = do_cool_stuff(img_thresh)
 concat_images = \
 (
     img_orig,
-    img_remove_lines,
-    img_remove_lines_vertical,
-    img_smooth,
+    img1,
+    img2,
+    img3,
     img_thresh,
     img_with_contours
 )
