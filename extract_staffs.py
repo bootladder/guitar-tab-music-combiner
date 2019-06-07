@@ -52,24 +52,33 @@ def find_staffline_rows(img, line_width, line_spacing):
     # should be above a threshold of black pixels
     current_row = 0
     while (current_row < iter_range):
+
+        # List of 5 ranges of line_width
         staff_lines = [row_black_pixel_histogram[j: j + line_width] for j in
                        range(current_row, current_row + (num_stafflines - 1) * (line_width + line_spacing) + 1,
                              line_width + line_spacing)]
         pixel_avg = sum(sum(staff_lines, [])) / (num_stafflines * line_width)
 
-        print 'row: ', current_row, 'staff_lines: ' , staff_lines
-        print 'sum of 5 lines at row ', current_row, 'is ', sum(sum(staff_lines,[]))
+        #print 'row: ', current_row, 'staff_lines: ' , staff_lines
+        #print 'sum of 5 lines at row ', current_row, 'is ', sum(sum(staff_lines,[]))
 
         for line in staff_lines:
             if (sum(line) / line_width < threshold * num_cols):
                 current_row += 1
                 break
             else:
+
+                #found a single staff line, thus the top of a staff
+                #List of 5 ranges
                 staff_row_indices = [list(range(j, j + line_width)) for j in
                                     range(current_row,
                                         current_row + (num_stafflines - 1) * (line_width + line_spacing) + 1,
                                         line_width + line_spacing)]
+
+                #List of Staffs (staff is a list of 5 ranges)
                 all_staff_row_indices.append(staff_row_indices)
+
+                #skip a whole staff's length
                 current_row = current_row + staff_length
 
     return all_staff_row_indices
@@ -130,76 +139,100 @@ def get_ref_lengths(img):
     line_width = black_runs.most_common(1)[0][0]
     width_spacing_sum = black_white_sum.most_common(1)[0][0]
 
-    assert (line_spacing + line_width == width_spacing_sum), "Estimated Line Thickness + Spacing doesn't correspond with Most Common Sum "
+    assert (line_spacing + line_width == width_spacing_sum), "Estimated Line Thickness %d + Spacing %d doesn't correspond with Most Common Sum %d" %(line_width,line_spacing,width_spacing_sum)
 
     return line_width, line_spacing
-
-
-
-#read stuff
-img = cv2.imread(sys.argv[1], 0)
-
-# ============ Noise Removal ============
-
-imgNoiseRemoval = cv2.fastNlMeansDenoising(img, None, 10, 7, 21)
-
-# ============ Binarization ============
-
-# Global Thresholding
-retval, imgThreshold = cv2.threshold(img,127,255,cv2.THRESH_BINARY)
-cv2.imwrite('scratch/binarized.jpg', imgThreshold)
-
-# Otsu's Thresholding
-retval, imgOtsu = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-cv2.imwrite('scratch/otsu.jpg', imgOtsu)
-
-# Open
-kernel = np.ones((5,5),np.uint8)
-imgOpen = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
-
-
-# Extract Lines
-imgHorizontalLines = ~imgOpen  #inverse
-kernel = np.ones((1,70),np.uint8)
-imgHorizontalLines = cv2.erode(imgHorizontalLines,kernel,iterations = 1)
-imgHorizontalLines = ~imgHorizontalLines
-thresh_val = 200
-ret,imgHorizontalLines = cv2.threshold(imgHorizontalLines,thresh_val,255,cv2.THRESH_BINARY)
 
 # Open
 def morph_open(img):
     kernel = np.ones((10,10),np.uint8)
     return cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
 
-imgHorizontalLinesOpened = morph_open(imgHorizontalLines)
+# Close
+def morph_close(img):
+    kernel = np.ones((9,9),np.uint8)
+    return cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
 
-line_width, line_spacing = get_ref_lengths(imgNoiseRemoval)
-print 'DeNoised only'
-print 'width: %d , spacing: %d' %(line_width, line_spacing)
-
-line_width, line_spacing = get_ref_lengths(imgThreshold)
-print 'Thresholded only'
-print 'width: %d , spacing: %d' %(line_width, line_spacing)
+def kernel_square(i):
+    return np.ones((i,i),np.uint8)
 
 
+myInput = 'input/music.png'
+def extract(arg):
 
-# ============ Find Staff Line Rows ============
+    img = cv2.imread(arg, 0)
 
-all_staffline_vertical_indices = find_staffline_rows(imgThreshold, line_width, line_spacing)
-print("[INFO] Found ", len(all_staffline_vertical_indices), " sets of staff lines")
-print("\n\n")
-print(all_staffline_vertical_indices)
+    # ============ Noise Removal ============
+
+    imgNoiseRemoval = cv2.fastNlMeansDenoising(img, None, 10, 7, 21)
+
+    # ============ Binarization ============
+
+    # Global Thresholding
+    retval, imgThreshold = cv2.threshold(img,127,255,cv2.THRESH_BINARY)
+    cv2.imwrite('scratch/binarized.jpg', imgThreshold)
+
+    # Otsu's Thresholding
+    retval, imgOtsu = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+    cv2.imwrite('scratch/otsu.jpg', imgOtsu)
+
+    # ============ Opening ============
+
+    kernel = np.ones((5,5),np.uint8)
+    imgOpen = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
+
+    # ============ Extract Lines ============
+    imgHorizontalLines = ~imgOpen  #inverse
+    kernel = np.ones((1,40),np.uint8)
+    imgHorizontalLines = cv2.erode(imgHorizontalLines,kernel,iterations = 1)
+    imgHorizontalLines = ~imgHorizontalLines
+    thresh_val = 200
+    ret,imgHorizontalLines = cv2.threshold(imgHorizontalLines,thresh_val,255,cv2.THRESH_BINARY)
+
+    # ============ Invert ============
+    imgHorizontalLines = ~imgHorizontalLines
+
+    # ============ Remove Non-Lines ============
+    img = imgHorizontalLines
+    kernel = np.zeros((21,21),np.uint8)
+    kernel[11,...] = 1
+    img = cv2.erode(img,kernel,iterations = 1)
+
+    # ============ Invert ============
+    img = ~img
+
+    # ============ Find Staff Reference Lengths ============
+
+    show(img)
+    img = img
+    line_width, line_spacing = get_ref_lengths(img)
+    print 'Staff width: %d , spacing: %d' %(line_width, line_spacing)
 
 
-concat_images = \
-(
-    imgHorizontalLinesOpened,
-    img,
-    imgThreshold,
-    imgOpen
-)
+    # ============ Find Staff Line Rows ============
 
-vis = np.concatenate(concat_images, axis=0)
-cv2.imshow('image',vis)
-k = cv2.waitKey(0) & 0xff
-print 'k is ' , k
+    img = img
+    all_staffline_vertical_indices = find_staffline_rows(img, line_width, line_spacing)
+    print("[INFO] Found ", len(all_staffline_vertical_indices), " sets of staff lines")
+    print("\n\n")
+
+    #for staff in all_staffline_vertical_indices:
+    #    print '\nstaff: ' , staff
+
+    concat_images = \
+    (
+        img,
+        imgThreshold,
+        imgOpen
+    )
+
+    vis = np.concatenate(concat_images, axis=0)
+    cv2.imshow('image',vis)
+    k = cv2.waitKey(0) & 0xff
+    print 'k is ' , k
+
+
+
+if __name__ == '__main__':
+    extract(sys.argv[1])
+
