@@ -52,6 +52,18 @@ def do_cool_stuff(img):
 
 
 def filter_contours_by_area(contours):
+
+    #get average, mean, mode area
+    areas = []
+    for c in contours:
+        areas.append(cv2.contourArea(c))
+
+    avg = np.mean(areas)
+    median = np.median(areas)
+    mode = np.median(areas)
+    print 'avg median mode: ', avg,median,mode
+    time.sleep(1)
+
     accepted_contours = []
     for c in contours:
 
@@ -63,14 +75,30 @@ def filter_contours_by_area(contours):
         cY = int(M["m01"] / M["m00"])
 
         area = cv2.contourArea(c)
-        print 'area of contour: ' , area
-        if area > 200 or area < 100:
-            print 'rejecting area ' , area
+        if area > (2*median) or area < (median/2):
             continue
+        print 'accepted area of contour: ' , area
 
         accepted_contours.append(c)
 
     return accepted_contours
+
+def sort_contours_by_column_position(contours):
+    #put the column position in a tuple
+    tuples = []
+    for c in contours:
+        # compute the center of the contour
+        M = cv2.moments(c)
+        if M["m00"] == 0:
+            continue
+        cX = int(M["m10"] / M["m00"])
+        cY = int(M["m01"] / M["m00"])
+        tuples.append((c,cX))
+
+    tuples = sorted(tuples, key=lambda tup:tup[1])
+    return [t[0] for t in tuples]
+
+
 
 def map_contours_to_glyphs(contours, img):
 
@@ -97,21 +125,40 @@ def draw_glpyhs_on_blank_image(glyphs, img):
         img[cY-10:cY+10,cX-10:cX+10] = g
     return img_blank
 
+#################################################################
+
 #read stuff
 img = img_orig = cv2.imread(sys.argv[1],0)
 
 #pre process
-img = img_pre_thresh = otsu_thresh(img)
+img = ~img #do everything with white on black
+img = remove_lines_horizontal(img)
+show(img)
+img = remove_lines_vertical(img)
+show(img)
+img = img_dilate = cv2.dilate(img,kernel_square(3),iterations = 1)
+show(img)
+img = img_laplace = laplace(img)
+show(img)
+img = img_dilate = cv2.dilate(img,kernel_square(3),iterations = 1)
+show(img)
+img = img_erode = cv2.erode(img,kernel_square(3),iterations = 1)
+show(img)
+img = img_thresh = otsu_thresh(img)
+show(img)
 img = img_smooth = pre_smooth(img)
-img = img_thresh = pre_thresh(img)
+show(img)
+img = img_thresh2 = otsu_thresh(img)
+show(img)
 #img = img_with_contours = do_cool_stuff(img)
 
 
 #contours
 contours, hierarchy = cv2.findContours(img,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
 accepted_contours = filter_contours_by_area(contours)
-glyphs = map_contours_to_glyphs(accepted_contours, img_orig)
+print 'there are %d contours' % len(accepted_contours)
+sorted_contours = sort_contours_by_column_position(accepted_contours)
+glyphs = map_contours_to_glyphs(sorted_contours, img_orig)
 showlisthorizontal(glyphs)
 
-print 'there are %d contours' % len(accepted_contours)
-showlist((img_orig, img_pre_thresh,img_smooth, img_thresh))
+showlist((img_orig, img_laplace,img_thresh, img_smooth, img_thresh2))

@@ -4,6 +4,21 @@ import sys
 import numpy as np
 import time
 
+
+# Open
+def morph_open(img):
+    kernel = np.ones((10,10),np.uint8)
+    return cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
+
+# Close
+def morph_close(img):
+    kernel = np.ones((9,9),np.uint8)
+    return cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
+
+def kernel_square(i):
+    return np.ones((i,i),np.uint8)
+
+
 def normalize(arr):
     sum = 0
     for i in range(len(arr)):
@@ -42,6 +57,16 @@ def otsu_thresh(img):
     retval, imgOtsu = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
     return imgOtsu
 
+def laplace(img):
+    arr = \
+    [
+        [0,1,0],
+        [1,-4,1],
+        [0,1,0]
+    ]
+    kernel = np.array(arr)
+    return cv2.filter2D(img,-1,kernel)
+
 
 def remove_lines(img):
     arr = \
@@ -62,16 +87,17 @@ def remove_lines(img):
     return cv2.filter2D(img,-1,kernel)
 
 def remove_lines_horizontal(img):
-    img = ~img  #inverse
-    kernel = np.ones((1,7),np.uint8)
-    eroded = cv2.erode(img,kernel,iterations = 1)
-    return ~eroded  #inverse
+    #need a white on black picture
+    kernel = np.ones((3,1),np.uint8)
+    #eroded = cv2.erode(img,kernel,iterations = 1)
+    opened = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
+    return opened
 
 def remove_lines_vertical(img):
-    img = ~img  #inverse
-    kernel = np.ones((7,1),np.uint8)
-    eroded = cv2.erode(img,kernel,iterations = 1)
-    return ~eroded  #inverse
+    #need a white on black picture
+    kernel = np.ones((1,3),np.uint8)
+    opened = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
+    return opened
 
 def extract_lines_horizontal(img):
     img = ~img  #inverse

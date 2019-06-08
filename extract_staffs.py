@@ -143,20 +143,6 @@ def get_ref_lengths(img):
 
     return line_width, line_spacing
 
-# Open
-def morph_open(img):
-    kernel = np.ones((10,10),np.uint8)
-    return cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
-
-# Close
-def morph_close(img):
-    kernel = np.ones((9,9),np.uint8)
-    return cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
-
-def kernel_square(i):
-    return np.ones((i,i),np.uint8)
-
-
 myInput = 'input/music.png'
 def extract(arg):
 
