@@ -5,10 +5,20 @@ import numpy as np
 import time
 
 
+# Open Square
+def morph_open_square(img, n):
+    kernel = np.ones((n,n),np.uint8)
+    return cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
+
 # Open
 def morph_open(img):
     kernel = np.ones((10,10),np.uint8)
     return cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
+
+# Close Square
+def morph_close_square(img, n):
+    kernel = np.ones((n,n),np.uint8)
+    return cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
 
 # Close
 def morph_close(img):
