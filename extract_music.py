@@ -53,22 +53,6 @@ def draw_contours(contours):
     cv2.drawContours(img_blank,contours,-1,(0,255,0),1)
     return img_blank
 
-
-def map_contours_to_bounding_slices(contours, img):
-    #img is rowsxcolumns
-    #rectangles are x,y
-    #x is column, y is row
-    #print 'img size: ',len(img),len(img[0])
-
-    #return slice of entire Height
-    regions = []
-    for c in contours:
-        x,y,w,h = cv2.boundingRect(c)
-        newRegion = img[0:len(img),x:x+w]
-        regions.append(newRegion)
-
-    return regions
-
 def draw_regions_on_blank_image(regions):
     img_blank = np.ones_like(img_orig)*255
     for r in regions:
@@ -126,52 +110,74 @@ def note_head_exists(contours):
     return False
 
 
-def filter_regions_with_notes(regions):
+def boundingslice_contains_note(img_slice):
 
-    accepted_regions = []
-    for r in regions:
+    # Pre Process
+    r_orig = r = img_slice
+    r = ~r #do everything with white on black
+    r = remove_lines_horizontal(r)
+    r = remove_lines_vertical(r)
+    r = otsu_thresh(r)
+    r = r_filtered = cv2.dilate(r,kernel_square(3),iterations = 1)
+    #show(r)
 
-        # Pre Process
-        r_orig = r
-        r = ~r #do everything with white on black
-        r = remove_lines_horizontal(r)
-        r = remove_lines_vertical(r)
-        r = otsu_thresh(r)
-        r = r_filtered = cv2.dilate(r,kernel_square(3),iterations = 1)
-        #show(r)
+    # Contours
+    contours, hierarchy = cv2.findContours(r,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+    #print 'there are %d contours\n\n' %len(contours)
 
-        # Contours
-        contours, hierarchy = cv2.findContours(r,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-        #print 'there are %d contours\n\n' %len(contours)
+    # Filter by Number of Non-Black
+    percent_result = check_region_area_threshold(r)
+    #print percent_result
 
-        # Filter by Number of Non-Black
-        percent_result = check_region_area_threshold(r)
-        #print percent_result
+    if percent_result > 0.24 or percent_result < 0.05:
+        print 'REJECTED by Threshold: %f' % percent_result
+        #showlisthorizontal((r_orig,np.ones_like(r_orig)*255,r))
+        return False
 
-        if percent_result > 0.24 or percent_result < 0.05:
-            print 'REJECTED by Threshold: %f' % percent_result
-            #showlisthorizontal((r_orig,np.ones_like(r_orig)*255,r))
+
+    # Filter Contours: Remove Rectangular Contours
+    # If Contour Area is close to Area of Minimum Bounding Rectangle
+    contours = contours_nonrectangular = filter_contours_by_minimum_bounding_rectangle(contours)
+    if len(contours) == 0:
+        print 'REJECTED: All Contours Filtered Out'
+        return False
+
+
+
+    # Filter:  Check existence of Note Head
+    if False == note_head_exists(contours):
+        print 'REJECTED: No Note Head Contour Exists'
+        return False
+
+
+    return True
+
+
+
+def contour_to_boundingslice(contour, img):
+    #img is rowsxcolumns
+    #rectangles are x,y
+    #x is column, y is row
+    #print 'img size: ',len(img),len(img[0])
+
+    #return slice of entire Height
+    x,y,w,h = cv2.boundingRect(contour)
+    newRegion = img[0:len(img),x:x+w]
+    return newRegion
+
+
+def filter_contours_by_note_match(contours, img):
+    acceptedContours = []
+    for c in contours:
+        bounding_slice = contour_to_boundingslice(c,img)
+        if False == boundingslice_contains_note(bounding_slice):
             continue
 
+        acceptedContours.append(c)
 
-        # Filter Contours: Remove Rectangular Contours
-        # If Contour Area is close to Area of Minimum Bounding Rectangle
-        contours = contours_nonrectangular = filter_contours_by_minimum_bounding_rectangle(contours)
-        if len(contours) == 0:
-            print 'REJECTED: All Contours Filtered Out'
-            continue
+    return acceptedContours
 
 
-
-        # Filter:  Check existence of Note Head
-        if False == note_head_exists(contours):
-            print 'REJECTED: No Note Head Contour Exists'
-            continue
-
-
-        accepted_regions.append(r)
-
-    return accepted_regions
 
 #################################################################
 
@@ -207,11 +213,12 @@ img = img_circular_contours_2 = draw_contours(contours)
 # of the original image that contains the contour,
 # so we have more information to filter out non-notes
 
-regions = map_contours_to_bounding_slices(contours, img_orig)
-regions = regions_filtered = filter_regions_with_notes(regions)
-print 'there are %d ACCEPTED regions' % len(regions)
+contours = contours_with_notes = filter_contours_by_note_match(contours, img_orig)
+print 'there are %d contours WITH NOTES' % len(contours)
 
-showlisthorizontal(regions)
+print contours
+img_contours_done = draw_contours(contours)
+
 
 concat_images = \
 (
@@ -223,5 +230,6 @@ concat_images = \
     ,img_all_contours
     ,img_circular_contours
     ,img_circular_contours_2
+    ,img_contours_done
 )
 showlist(concat_images)
