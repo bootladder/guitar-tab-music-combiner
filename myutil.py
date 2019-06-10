@@ -123,17 +123,20 @@ def extract_lines_horizontal(img):
 
 def show(img):
     cv2.imshow('image',img)
-    k = cv2.waitKey(0) & 0xff
+    while (cv2.waitKey(0) & 0xff) != 113:
+        cv2.imshow('image',img)
 
 def showlist(l):
     vis = np.concatenate(l, axis=0)
     cv2.imshow('image',vis)
-    k = cv2.waitKey(0) & 0xff
+    while (cv2.waitKey(0) & 0xff) != 113:
+        cv2.imshow('image',vis)
 
 def showlisthorizontal(l):
     vis = np.concatenate(l, axis=1)
     cv2.imshow('image',vis)
-    k = cv2.waitKey(0) & 0xff
+    while (cv2.waitKey(0) & 0xff) != 113:
+        cv2.imshow('image',vis)
 
 #   #do stuff
 #   img_inverse = ~img_orig

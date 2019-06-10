@@ -3,6 +3,7 @@ import cv2
 import sys
 import numpy as np
 import time
+from myutil import *
 from collections import Counter
 
 def find_staffline_rows(img, line_width, line_spacing):
@@ -146,50 +147,35 @@ def get_ref_lengths(img):
 myInput = 'input/music.png'
 def extract(arg):
 
-    img = cv2.imread(arg, 0)
+    img = img_orig = cv2.imread(arg, 0)
 
-    # ============ Noise Removal ============
-
-    imgNoiseRemoval = cv2.fastNlMeansDenoising(img, None, 10, 7, 21)
-
-    # ============ Binarization ============
-
-    # Global Thresholding
-    retval, imgThreshold = cv2.threshold(img,127,255,cv2.THRESH_BINARY)
-    cv2.imwrite('scratch/binarized.jpg', imgThreshold)
-
-    # Otsu's Thresholding
-    retval, imgOtsu = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-    cv2.imwrite('scratch/otsu.jpg', imgOtsu)
-
-    # ============ Opening ============
-
-    kernel = np.ones((5,5),np.uint8)
-    imgOpen = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
+    img = img_noiseremoval = cv2.fastNlMeansDenoising(img, None, 10, 7, 21)
+    img = img_otsu = otsu_thresh(img)
+    img = img_open = morph_open_square(img, 5)
 
     # ============ Extract Lines ============
-    imgHorizontalLines = ~imgOpen  #inverse
+    img = imgHorizontalLines = ~img
     kernel = np.ones((1,40),np.uint8)
-    imgHorizontalLines = cv2.erode(imgHorizontalLines,kernel,iterations = 1)
-    imgHorizontalLines = ~imgHorizontalLines
+    img = imgHorizontalLines = cv2.erode(imgHorizontalLines,kernel,iterations = 1)
+    img = imgHorizontalLines = ~imgHorizontalLines
     thresh_val = 200
     ret,imgHorizontalLines = cv2.threshold(imgHorizontalLines,thresh_val,255,cv2.THRESH_BINARY)
+    img = imgHorizontalLines
 
     # ============ Invert ============
-    imgHorizontalLines = ~imgHorizontalLines
+    img = imgHorizontalLines = ~imgHorizontalLines
 
     # ============ Remove Non-Lines ============
-    img = imgHorizontalLines
+    img = img = imgHorizontalLines
     kernel = np.zeros((21,21),np.uint8)
     kernel[11,...] = 1
-    img = cv2.erode(img,kernel,iterations = 1)
+    img = img = cv2.erode(img,kernel,iterations = 1)
 
     # ============ Invert ============
-    img = ~img
+    img = img = ~img
 
     # ============ Find Staff Reference Lengths ============
 
-    show(img)
     img = img
     line_width, line_spacing = get_ref_lengths(img)
     print 'Staff width: %d , spacing: %d' %(line_width, line_spacing)
@@ -198,24 +184,27 @@ def extract(arg):
     # ============ Find Staff Line Rows ============
 
     img = img
-    all_staffline_vertical_indices = find_staffline_rows(img, line_width, line_spacing)
+    all_staffline_vertical_indices = find_staffline_rows(img_orig, line_width, line_spacing)
     print("[INFO] Found ", len(all_staffline_vertical_indices), " sets of staff lines")
     print("\n\n")
 
     #for staff in all_staffline_vertical_indices:
     #    print '\nstaff: ' , staff
 
+
     concat_images = \
     (
-        img,
-        imgThreshold,
-        imgOpen
+        img_orig,
+        imgHorizontalLines
     )
 
-    vis = np.concatenate(concat_images, axis=0)
-    cv2.imshow('image',vis)
-    k = cv2.waitKey(0) & 0xff
-    print 'k is ' , k
+    print 'wat'
+    showlist(concat_images)
+
+    #vis = np.concatenate(concat_images, axis=0)
+    #cv2.imshow('image',vis)
+    #k = cv2.waitKey(0) & 0xff
+    #print 'k is ' , k
 
 
 
