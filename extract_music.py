@@ -68,11 +68,8 @@ def filter_regions_with_notes(regions):
         # Contours
         contours, hierarchy = cv2.findContours(r,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
         print 'there are %d contours\n\n' %len(contours)
-        r = img_all_contours = draw_contours(contours)
         img_blank = np.ones_like(r)*255
-        cv2.drawcontours(img_blank,contours,-1,(0,255,0),1)
-        return img_blank
-        showlisthorizontal(r)
+        cv2.drawContours(img_blank,contours,-1,(0,255,0),1)
 
         countNonBlack = 0.0
         rows = len(r)
