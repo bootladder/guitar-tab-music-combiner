@@ -185,20 +185,21 @@ img = img_rm_lines_v  = remove_lines_vertical(img)
 img = img_thresh      = otsu_thresh(img)
 #img = img_dilate      = cv2.dilate(img,kernel_square(3),iterations = 1)
 
-# Contours
+# Get All Contours
 contours, hierarchy = cv2.findContours(img,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-print 'there are %d contours\n\n' %len(contours)
+contours_orig = contours
+print 'there are %d TOTAL contours\n\n' %len(contours)
 img = img_all_contours = draw_contours(contours)
 
-# Circular Contours
+# Circular Contours By Radius of Bounding Circle
 contours = circular_contours = filter_contours_by_radius_of_bounding_circle(contours)
-print 'there are %d CIRUCLAR contours\n\n' %len(circular_contours)
-img = img_circular_contours = draw_contours(circular_contours)
+print 'there are %d CIRUCLAR contours\n\n' %len(contours)
+img = img_circular_contours = draw_contours(contours)
 
 # Circular Contours By AREA
-contours = circular_contours = filter_contours_by_area(contours)
-print 'there are %d CIRUCLAR contours\n\n' %len(circular_contours)
-img = img_circular_contours_2 = draw_contours(circular_contours)
+contours = circular_contours_2 = filter_contours_by_area(contours)
+print 'there are %d CIRUCLAR contours\n\n' %len(contours)
+img = img_circular_contours_2 = draw_contours(contours)
 
 #######
 # Here we have all the note contours but also some non-notes.
@@ -206,7 +207,7 @@ img = img_circular_contours_2 = draw_contours(circular_contours)
 # of the original image that contains the contour,
 # so we have more information to filter out non-notes
 
-regions = map_contours_to_bounding_slices(circular_contours, img_orig)
+regions = map_contours_to_bounding_slices(contours, img_orig)
 regions = regions_filtered = filter_regions_with_notes(regions)
 print 'there are %d ACCEPTED regions' % len(regions)
 
