@@ -53,12 +53,6 @@ def draw_contours(contours):
     cv2.drawContours(img_blank,contours,-1,(0,255,0),1)
     return img_blank
 
-def draw_regions_on_blank_image(regions):
-    img_blank = np.ones_like(img_orig)*255
-    for r in regions:
-        show(r)
-    return img_blank
-
 def check_region_area_threshold(r):
     countNonBlack = 0.0
     rows = len(r)
@@ -160,9 +154,8 @@ def contour_to_boundingslice(contour, img):
     #x is column, y is row
     #print 'img size: ',len(img),len(img[0])
 
-    #return slice of entire Height
     x,y,w,h = cv2.boundingRect(contour)
-    newRegion = img[0:len(img),x:x+w]
+    newRegion = img[0:len(img),x:x+w]  #return slice of entire Height
     return newRegion
 
 
@@ -176,7 +169,6 @@ def filter_contours_by_note_match(contours, img):
         acceptedContours.append(c)
 
     return acceptedContours
-
 
 
 #################################################################
@@ -216,9 +208,10 @@ img = img_circular_contours_2 = draw_contours(contours)
 contours = contours_with_notes = filter_contours_by_note_match(contours, img_orig)
 print 'there are %d contours WITH NOTES' % len(contours)
 
-print contours
 img_contours_done = draw_contours(contours)
 
+# Sort Contours by X ie. column index ie. left to right
+contours = contours_sorted = sort_contours_by_column_position(contours)
 
 concat_images = \
 (

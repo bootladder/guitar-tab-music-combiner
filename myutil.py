@@ -4,6 +4,21 @@ import sys
 import numpy as np
 import time
 
+def sort_contours_by_column_position(contours):
+    #put the column position in a tuple
+    tuples = []
+    for c in contours:
+        # compute the center of the contour
+        M = cv2.moments(c)
+        if M["m00"] == 0:
+            continue
+        cX = int(M["m10"] / M["m00"])
+        cY = int(M["m01"] / M["m00"])
+        tuples.append((c,cX))
+
+    tuples = sorted(tuples, key=lambda tup:tup[1])
+    return [t[0] for t in tuples]
+
 
 # Open Square
 def morph_open_square(img, n):
