@@ -4,6 +4,16 @@ import sys
 import numpy as np
 import time
 
+def coordinates_of_contour_center(contour):
+    # compute the center of the contour
+    M = cv2.moments(contour)
+    if M["m00"] == 0:
+        #raise('wat')
+        return (0,0)
+    cX = int(M["m10"] / M["m00"])
+    cY = int(M["m01"] / M["m00"])
+    return (cX,cY)
+
 def sort_contours_by_column_position(contours):
     #put the column position in a tuple
     tuples = []

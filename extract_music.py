@@ -48,7 +48,7 @@ def filter_contours_by_radius_of_bounding_circle(contours):
     print 'BY BOUNDING CIRCLE: there are %d accepted contours' % len(acceptedContours)
     return acceptedContours
 
-def draw_contours(contours):
+def draw_contours_on_image_like(contours, img_orig):
     img_blank = np.ones_like(img_orig)*255
     cv2.drawContours(img_blank,contours,-1,(0,255,0),1)
     return img_blank
@@ -76,10 +76,10 @@ def filter_contours_by_minimum_bounding_rectangle(contours):
         #print 'minRect Area: ' , minRectArea
         #print 'Area: ', contourArea
         #print 'Ratio: ' , ratio
-        img = draw_contours([c])
-        box = cv2.boxPoints(minRect)
-        box = np.int0(box)
-        cv2.drawContours(img,[box],0,(0,0,255),1)
+        #img = draw_contours_on_image_like([c], img_orig)
+        #box = cv2.boxPoints(minRect)
+        #box = np.int0(box)
+        #cv2.drawContours(img,[box],0,(0,0,255),1)
         #show(img)
 
     return contours
@@ -96,11 +96,11 @@ def note_head_exists(contours):
         #print ratio,  ' is the ratio'
         if ratio > 0.50:
             #print 'ZZZPASS'
-            #show(draw_contours([c]))
+            #show(draw_contours_on_image_like([c]), img_orig)
             return True
 
     #print 'ZZZZREJECTED'
-    #show(draw_contours([c]))
+    #show(draw_contours_on_image_like([c]))
     return False
 
 
@@ -171,58 +171,73 @@ def filter_contours_by_note_match(contours, img):
     return acceptedContours
 
 
+def map_contours_to_center_coordinates(contours):
+    centers = []
+    for c in contours:
+        centers.append(coordinates_of_contour_center(c))
+    return centers
+
+
 #################################################################
 
-# Load Image
-img = img_orig = cv2.imread(sys.argv[1],0)
+def imgmusic_to_notecoordinates(img):
+    # Pre Process
+    img_orig = img
+    img = ~img #do everything with white on black
+    img = img_rm_lines_h  = remove_lines_horizontal(img)
+    img = img_rm_lines_v  = remove_lines_vertical(img)
+    img = img_thresh      = otsu_thresh(img)
+    #img = img_dilate      = cv2.dilate(img,kernel_square(3),iterations = 1)
 
-# Pre Process
-img = ~img #do everything with white on black
-img = img_rm_lines_h  = remove_lines_horizontal(img)
-img = img_rm_lines_v  = remove_lines_vertical(img)
-img = img_thresh      = otsu_thresh(img)
-#img = img_dilate      = cv2.dilate(img,kernel_square(3),iterations = 1)
+    # Get All Contours
+    contours, hierarchy = cv2.findContours(img,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+    contours_orig = contours
+    print 'there are %d TOTAL contours\n\n' %len(contours)
+    #img = img_all_contours = draw_contours_on_image_like(contours)
 
-# Get All Contours
-contours, hierarchy = cv2.findContours(img,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-contours_orig = contours
-print 'there are %d TOTAL contours\n\n' %len(contours)
-img = img_all_contours = draw_contours(contours)
+    # Circular Contours By Radius of Bounding Circle
+    contours = circular_contours = filter_contours_by_radius_of_bounding_circle(contours)
+    print 'there are %d CIRUCLAR contours\n\n' %len(contours)
+    #img = img_circular_contours = draw_contours_on_image_like(contours)
 
-# Circular Contours By Radius of Bounding Circle
-contours = circular_contours = filter_contours_by_radius_of_bounding_circle(contours)
-print 'there are %d CIRUCLAR contours\n\n' %len(contours)
-img = img_circular_contours = draw_contours(contours)
+    # Circular Contours By AREA
+    contours = circular_contours_2 = filter_contours_by_area(contours)
+    print 'there are %d CIRUCLAR contours\n\n' %len(contours)
+    #img = img_circular_contours_2 = draw_contours_on_image_like(contours)
 
-# Circular Contours By AREA
-contours = circular_contours_2 = filter_contours_by_area(contours)
-print 'there are %d CIRUCLAR contours\n\n' %len(contours)
-img = img_circular_contours_2 = draw_contours(contours)
+    #######
+    # Here we have all the note contours but also some non-notes.
+    # To filter out non-notes, apply filters on a slice
+    # of the original image that contains the contour,
+    # so we have more information to filter out non-notes
 
-#######
-# Here we have all the note contours but also some non-notes.
-# To filter out non-notes, apply filters on a slice
-# of the original image that contains the contour,
-# so we have more information to filter out non-notes
+    contours = contours_with_notes = filter_contours_by_note_match(contours, img_orig)
+    print 'there are %d contours WITH NOTES' % len(contours)
 
-contours = contours_with_notes = filter_contours_by_note_match(contours, img_orig)
-print 'there are %d contours WITH NOTES' % len(contours)
+    #img_contours_done = draw_contours_on_image_like(contours)
 
-img_contours_done = draw_contours(contours)
+    # Sort Contours by X ie. column index ie. left to right
+    contours = contours_sorted = sort_contours_by_column_position(contours)
 
-# Sort Contours by X ie. column index ie. left to right
-contours = contours_sorted = sort_contours_by_column_position(contours)
+    concat_images = \
+    (
+        img_orig
+        ,img_rm_lines_h
+        ,img_rm_lines_v
+        ,img_thresh
+        #,img_dilate
+    #   ,img_all_contours
+    #    ,img_circular_contours
+    #    ,img_circular_contours_2
+    #    ,img_contours_done
+    )
+    #showlist(concat_images)
 
-concat_images = \
-(
-     img_orig
-    ,img_rm_lines_h
-    ,img_rm_lines_v
-    ,img_thresh
-    #,img_dilate
-    ,img_all_contours
-    ,img_circular_contours
-    ,img_circular_contours_2
-    ,img_contours_done
-)
-showlist(concat_images)
+    centers = map_contours_to_center_coordinates(contours)
+    return centers
+
+
+if __name__ == '__main__':
+    img = cv2.imread(sys.argv[1],0)
+    imgmusic_to_notecoordinates(img)
+
