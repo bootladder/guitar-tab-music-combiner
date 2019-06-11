@@ -93,6 +93,10 @@ def pre_thresh(img):
     ret,img_thresh = cv2.threshold(img,thresh_val,255,cv2.THRESH_BINARY)
     return img_thresh
 
+def binary_thresh(img, val):
+    ret,img_thresh = cv2.threshold(img,val,255,cv2.THRESH_BINARY)
+    return img_thresh
+
 def otsu_thresh(img):
     retval, imgOtsu = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
     return imgOtsu
