@@ -3,6 +3,65 @@ import cv2
 import sys
 import numpy as np
 import time
+from collections import Counter
+
+def get_staff_reference_lengths(img):
+    num_rows = img.shape[0]  # Image Height (number of rows)
+    num_cols = img.shape[1]  # Image Width (number of columns)
+    rle_image_white_runs = []  # Cumulative white run list
+    rle_image_black_runs = []  # Cumulative black run list
+    sum_all_consec_runs = []  # Cumulative consecutive black white runs
+
+    for i in range(num_cols):
+        col = img[:, i]
+        rle_col = []
+        rle_white_runs = []
+        rle_black_runs = []
+        run_val = 0  # (The number of consecutive pixels of same value)
+        run_type = col[0]  # Should be 255 (white) initially
+        for j in range(num_rows):
+            if (col[j] == run_type):
+                # increment run length
+                run_val += 1
+            else:
+                # add previous run length to rle encoding
+                rle_col.append(run_val)
+                if (run_type == 0):
+                    rle_black_runs.append(run_val)
+                else:
+                    rle_white_runs.append(run_val)
+
+                # alternate run type
+                run_type = col[j]
+                # increment run_val for new value
+                run_val = 1
+
+        # add final run length to encoding
+        rle_col.append(run_val)
+        if (run_type == 0):
+            rle_black_runs.append(run_val)
+        else:
+            rle_white_runs.append(run_val)
+
+        # Calculate sum of consecutive vertical runs
+        sum_rle_col = [sum(rle_col[i: i + 2]) for i in range(len(rle_col))]
+
+        # Add to column accumulation list
+        rle_image_white_runs.extend(rle_white_runs)
+        rle_image_black_runs.extend(rle_black_runs)
+        sum_all_consec_runs.extend(sum_rle_col)
+
+    white_runs = Counter(rle_image_white_runs)
+    black_runs = Counter(rle_image_black_runs)
+    black_white_sum = Counter(sum_all_consec_runs)
+
+    line_spacing = white_runs.most_common(1)[0][0]
+    line_width = black_runs.most_common(1)[0][0]
+    width_spacing_sum = black_white_sum.most_common(1)[0][0]
+
+    assert (line_spacing + line_width == width_spacing_sum), "Estimated Line Thickness %d + Spacing %d doesn't correspond with Most Common Sum %d" %(line_width,line_spacing,width_spacing_sum)
+
+    return line_width, line_spacing
 
 def draw_contours_on_image_like(contours, img_orig):
     img_blank = np.ones_like(img_orig)*255
