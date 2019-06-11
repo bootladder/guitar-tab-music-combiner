@@ -18,16 +18,29 @@ def pipeline_add(name, func):
 
     pipeline.append(d_new)
 
+def put_text(img,text):
+    img_new = img
+    cv2.putText(img_new,text, (10,len(img)), cv2.FONT_HERSHEY_PLAIN, 1, (127), 2, cv2.LINE_AA)
+    return img_new
 
-def pipeline_get(name):
+def pipeline_get(name, annotate=False):
     for d in pipeline:
         if d['name'] == name:
-            return d['img']
+            img = d['img']
+            name = d['name']
+            if annotate == True:
+                print 'yay'
+                img = put_text(img,name)
+            return img
     return pipeline[0]['key_error']
 
-def pipeline_all():
-    return [d['img'] for d in pipeline]
-    #return [pipeline[i]['img'] for i in range(0,len(pipeline))]
+def pipeline_all(annotate=False):
+    if annotate == False:
+        return [d['img'] for d in pipeline]
+    else:
+        return [ put_text(d['img'],d['name']) for d in pipeline]
+
+#return [pipeline[i]['img'] for i in range(0,len(pipeline))]
 
 def pipeline_last():
     return pipeline[-1]['img']
@@ -92,6 +105,61 @@ def get_staff_reference_lengths(img):
     assert (line_spacing + line_width == width_spacing_sum), "Estimated Line Thickness %d + Spacing %d doesn't correspond with Most Common Sum %d" %(line_width,line_spacing,width_spacing_sum)
 
     return line_width, line_spacing
+
+
+def find_staffline_rows(img, line_width, line_spacing):
+    num_rows = img.shape[0]  # Image Height (number of rows)
+    num_cols = img.shape[1]  # Image Width (number of columns)
+    row_black_pixel_histogram = []
+
+    # Determine number of black pixels in each row
+    for i in range(num_rows):
+        row = img[i]
+        num_black_pixels = 0
+        for j in range(len(row)):
+            if (row[j] == 0):
+                num_black_pixels += 1
+
+        row_black_pixel_histogram.append(num_black_pixels)
+
+    # plt.bar(np.arange(num_rows), row_black_pixel_histogram)
+    # plt.show()
+
+    all_staff_row_indices = []
+    num_stafflines = 5
+    threshold = 0.2
+    staff_length = num_stafflines * (line_width + line_spacing) - line_spacing
+    iter_range = num_rows - staff_length + 1
+
+    # Find stafflines by finding sum of rows that occur according to
+    # staffline width and staffline space which contain as many black pixels
+    # as a thresholded value (based of width of page)
+    #
+    # Filter out using condition that all lines in staff
+    # should be above a threshold of black pixels
+    current_row = 0
+    while (current_row < iter_range):
+        staff_lines = [row_black_pixel_histogram[j: j + line_width] for j in
+                       range(current_row, current_row + (num_stafflines - 1) * (line_width + line_spacing) + 1,
+                             line_width + line_spacing)]
+        pixel_avg = sum(sum(staff_lines, [])) / (num_stafflines * line_width)
+
+        for line in staff_lines:
+            if (sum(line) / line_width < threshold * num_cols):
+                current_row += 1
+                break
+        else:
+            staff_row_indices = [list(range(j, j + line_width)) for j in
+                                 range(current_row,
+                                       current_row + (num_stafflines - 1) * (line_width + line_spacing) + 1,
+                                       line_width + line_spacing)]
+            all_staff_row_indices.append(staff_row_indices)
+            current_row = current_row + staff_length
+
+    return all_staff_row_indices
+
+
+
 
 def draw_contours_on_image_like(contours, img_orig):
     img_blank = np.ones_like(img_orig)*255

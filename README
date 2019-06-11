@@ -1,3 +1,15 @@
 # extract page from pdf
 sudo apt install pdftk
 pdftk input.pdf cat 37 output page37.pdf
+
+# convert pdf to image
+pdftoppm page37.pdf outputname -png
+
+Thresholding at the beginning
+
+Get the  half note recognized
+
+Start the web app
+
+Filter Pipeline Annotator and Vierewr
+
