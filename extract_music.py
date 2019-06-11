@@ -136,11 +136,11 @@ def boundingslice_contains_note(img_slice):
     # Filter:  Check existence of Note Head
     if False == note_head_exists(contours):
         print 'REJECTED: No Note Head Contour Exists'
-        show(r_orig)
-        show(r_horiz)
-        show(r_vert)
-        show(r_thresh)
-        show(r_dilate)
+        #show(r_orig)
+        #show(r_horiz)
+        #show(r_vert)
+        #show(r_thresh)
+        #show(r_dilate)
         return False
 
 

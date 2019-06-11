@@ -41,13 +41,13 @@ for i in range(0,len(coords)):
 
     glyphRowSize = len(glyphs[i])
     glyphColSize = len(glyphs[i][0])
-    print 'Glyph Size: rows ',glyphRowSize,' col ',glyphColSize
+    #print 'Glyph Size: rows ',glyphRowSize,' col ',glyphColSize
 
     coord_row_start = (row - (glyphRowSize/2))
     coord_col_start = (col - (glyphColSize/2))
 
     img_music[ coord_row_start:coord_row_start+glyphRowSize,
                coord_col_start:coord_col_start+glyphColSize] = glyphs[i]
-    print 'row ',row,' col ',col
+    #print 'row ',row,' col ',col
 
 show(img_music)

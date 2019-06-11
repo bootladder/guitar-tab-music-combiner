@@ -170,6 +170,7 @@ def extract(arg):
     kernel = np.zeros((21,21),np.uint8)
     kernel[11,...] = 1
     img = img = cv2.erode(img,kernel,iterations = 1)
+    show(img)
 
     # ============ Invert ============
     img = img = ~img
@@ -186,6 +187,7 @@ def extract(arg):
     img = img
     all_staffline_vertical_indices = find_staffline_rows(img_orig, line_width, line_spacing)
     print("[INFO] Found ", len(all_staffline_vertical_indices), " sets of staff lines")
+    print all_staffline_vertical_indices
     print("\n\n")
 
     #for staff in all_staffline_vertical_indices:
