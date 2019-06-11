@@ -30,10 +30,6 @@ def remove_non_lines(img):
     img = img = cv2.erode(img,kernel,iterations = 1)
     return img
 
-def extract_horizontal_lines_version2(img):
-
-    return img
-
 
 img = img_orig = cv2.imread(sys.argv[1], 0)
 
@@ -42,14 +38,14 @@ p_add('noiseremoval',  lambda img: cv2.fastNlMeansDenoising(img, None, 10, 7, 21
 p_add('thresh1',       otsu_thresh)
 ##p_add('open1',         lambda img: morph_open_square(img,5))
 p_add('horizontal_lines', extract_horizontal_lines)
-p_add('horizontal_lines_version2', extract_horizontal_lines_version2)
 ##p_add('invert1',       lambda img: ~img)
 ##p_add('remove_non_lines', remove_non_lines)
 
 showlist(pipeline_all(True))
-#show(pipeline_get('thresh1', True))
 
-img = pipeline_last()
+
+img = pipeline_get('thresh1')
+show(img)
 
 staff_width,staff_spacing = get_staff_reference_lengths(img)
 print 'STAFF: ', staff_width,staff_spacing

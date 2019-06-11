@@ -8,6 +8,8 @@ from collections import Counter
 
 pipeline = []
 def pipeline_init(img_orig):
+    global pipeline
+    pipeline = []
     d_init = {'img': img_orig, 'name': 'init'}
     pipeline.append(d_init)
 
@@ -38,7 +40,7 @@ def pipeline_all(annotate=False):
     if annotate == False:
         return [d['img'] for d in pipeline]
     else:
-        return [ put_text(d['img'],d['name']) for d in pipeline]
+        return [ put_text(d['img'].copy(),d['name']) for d in pipeline]
 
 #return [pipeline[i]['img'] for i in range(0,len(pipeline))]
 
