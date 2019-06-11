@@ -4,42 +4,50 @@ import sys
 import numpy as np
 import time
 from myutil import *
-from collections import Counter
+
+p_init = pipeline_init
+p_add  = pipeline_add
+p_get  = pipeline_get
 
 def draw_image_histogram(image, channels, color='k'):
     hist = cv2.calcHist([image], channels, None, [256], [0, 256])
     plt.plot(hist, color=color)
     plt.xlim([0, 256])
 
+def extract_horizontal_lines(img):
+    img = imgHorizontalLines = ~img
+    kernel = np.ones((1,40),np.uint8)
+    img = imgHorizontalLines = cv2.erode(imgHorizontalLines,kernel,iterations = 1)
+    img = imgHorizontalLines = ~imgHorizontalLines
+    thresh_val = 200
+    ret,imgHorizontalLines = cv2.threshold(imgHorizontalLines,thresh_val,255,cv2.THRESH_BINARY)
+    img = imgHorizontalLines
+    return img
+
+def remove_non_lines(img):
+    kernel = np.zeros((21,21),np.uint8)
+    kernel[11,...] = 1
+    img = img = cv2.erode(img,kernel,iterations = 1)
+    return img
+
 
 img = img_orig = cv2.imread(sys.argv[1], 0)
-#img = img_inverse = ~img
-#img = img_otsu = otsu_thresh(img)
 
+p_init(img)
+p_add('noiseremoval',  lambda img: cv2.fastNlMeansDenoising(img, None, 10, 7, 21))
+p_add('thresh1',       otsu_thresh)
+#p_add('open1',         lambda img: morph_open_square(img,5))
+p_add('horizontal_lines', extract_horizontal_lines)
+p_add('invert1',       lambda img: ~img)
+#p_add('remove_non_lines', remove_non_lines)
 
-img = img_noiseremoval = cv2.fastNlMeansDenoising(img, None, 10, 7, 21)
-img = img_otsu = otsu_thresh(img)
-img = img_open = morph_open_square(img, 5)
+#showlist(pipeline_all())
+show(pipeline_last())
 
-# ============ Extract Lines ============
-img = imgHorizontalLines = ~img
-kernel = np.ones((1,40),np.uint8)
-img = imgHorizontalLines = cv2.erode(imgHorizontalLines,kernel,iterations = 1)
-img = imgHorizontalLines = ~imgHorizontalLines
-thresh_val = 200
-ret,imgHorizontalLines = cv2.threshold(imgHorizontalLines,thresh_val,255,cv2.THRESH_BINARY)
-img = imgHorizontalLines
+img = pipeline_last()
 
-# ============ Invert ============
-img = imgHorizontalLines = ~imgHorizontalLines
-
-# ============ Remove Non-Lines ============
-img = img = imgHorizontalLines
-kernel = np.zeros((21,21),np.uint8)
-kernel[11,...] = 1
-img = img = cv2.erode(img,kernel,iterations = 1)
-show(img)
-
+staff_width,staff_spacing = get_staff_reference_lengths(img)
+print 'STAFF: ', staff_width,staff_spacing
 
 
 row_sums = []

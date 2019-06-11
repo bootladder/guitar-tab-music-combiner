@@ -5,6 +5,36 @@ import numpy as np
 import time
 from collections import Counter
 
+
+pipeline = []
+def pipeline_init(img_orig):
+    d_init = {'img': img_orig, 'name': 'init'}
+    pipeline.append(d_init)
+
+def pipeline_add(name, func):
+    img = pipeline[-1]['img']
+    new_img = func(img)
+    d_new = {'img': new_img, 'name':name}
+
+    pipeline.append(d_new)
+
+
+def pipeline_get(name):
+    for d in pipeline:
+        if d['name'] == name:
+            return d['img']
+    return pipeline[0]['key_error']
+
+def pipeline_all():
+    return [d['img'] for d in pipeline]
+    #return [pipeline[i]['img'] for i in range(0,len(pipeline))]
+
+def pipeline_last():
+    return pipeline[-1]['img']
+
+
+
+
 def get_staff_reference_lengths(img):
     num_rows = img.shape[0]  # Image Height (number of rows)
     num_cols = img.shape[1]  # Image Width (number of columns)
@@ -231,43 +261,3 @@ def showlisthorizontal(l):
     while (cv2.waitKey(0) & 0xff) != 113:
         cv2.imshow('image',vis)
 
-#   #do stuff
-#   img_inverse = ~img_orig
-#   img1 = remove_lines_horizontal(img_orig)
-#   img2 = extract_lines_horizontal(img_orig)
-#   img3 = remove_lines_vertical(remove_lines_horizontal(img_orig))
-#   
-#   
-#   concat_images = \
-#   (
-#       img_orig,
-#       img1,
-#       img2,
-#       img3,
-#       img_thresh,
-#       img_with_contours
-#   )
-#   
-#   vis = np.concatenate(concat_images, axis=0)
-#   
-#   
-#   #output stuff
-#   output = vis
-#   cv2.imshow('image',output)
-#   k = cv2.waitKey(0)
-
-
-
-#blah
-#
-#    [
-#    [10,10,10,10,10,10,10,10,10,10],
-#    [10,10,10,10,10,10,10,10,10,10],
-#    [10,10,10,10,10,10,10,10,10,10],
-#    [10,10,10,10,10,10,10,10,10,10],
-#    [10,10,10,10,10,10,10,10,10,10],
-#    [10,10,10,10,10,10,10,10,10,10],
-#    [10,10,10,10,10,10,10,10,10,10],
-#    [10,10,10,10,10,10,10,10,10,10],
-#    [10,10,10,10,10,10,10,10,10,10],
-#    [10,10,10,10,10,10,10,10,10,10]
