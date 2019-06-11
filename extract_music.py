@@ -48,11 +48,6 @@ def filter_contours_by_radius_of_bounding_circle(contours):
     print 'BY BOUNDING CIRCLE: there are %d accepted contours' % len(acceptedContours)
     return acceptedContours
 
-def draw_contours_on_image_like(contours, img_orig):
-    img_blank = np.ones_like(img_orig)*255
-    cv2.drawContours(img_blank,contours,-1,(0,255,0),1)
-    return img_blank
-
 def check_region_area_threshold(r):
     countNonBlack = 0.0
     rows = len(r)

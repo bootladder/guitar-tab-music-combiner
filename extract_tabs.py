@@ -66,30 +66,54 @@ def map_contours_to_glyphs(contours, img):
 
 def imgtab_to_glyphs(img):
     #pre process
-    img_orig = img 
-    img = ~img #do everything with white on black
-    img = img_rm_lines_h = remove_lines_horizontal(img)
-    img = img_rm_lines_v = remove_lines_vertical(img)
-    img = img_dilate = cv2.dilate(img,kernel_square(3),iterations = 1)
-    img = img_laplace = laplace(img)
-    img = img_dilate = cv2.dilate(img,kernel_square(3),iterations = 1)
-    img = img_erode = cv2.erode(img,kernel_square(3),iterations = 1)
-    img = img_thresh = otsu_thresh(img)
-    img = img_smooth = pre_smooth(img)
-    img = img_thresh2 = otsu_thresh(img)
-    img = img_open2 = morph_close_square(img,4)
-    #img = img_with_contours = do_cool_stuff(img)
+    img_orig = img
+    img = img_inverse       = ~img #do everything with white on black
+    img = img_thresh_1      = otsu_thresh(img)
+    img = img_rm_lines_h    = remove_lines_horizontal(img)
+    img = img_rm_lines_v    = remove_lines_vertical(img)
+    img = img_dilate        = cv2.dilate(img,kernel_square(3),iterations = 1)
+    img = img_laplace       = laplace(img)
+    img = img_dilate_2      = cv2.dilate(img,kernel_square(3),iterations = 1)
+    img = img_erode         = cv2.erode(img,kernel_square(3),iterations = 1)
+    img = img_thresh_2      = otsu_thresh(img)
 
+    img = img_smooth        = pre_smooth(img)
+    img = img_thresh_3      = otsu_thresh(img)
+    img = img_open2         = morph_close_square(img,4)
+
+
+    # try another image in the pipe
+    img = img_thresh_2
 
     #contours 2 glyphs
-    contours, hierarchy = cv2.findContours(img,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+    contours, hierarchy = cv2.findContours(img,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+    img_with_contours = draw_contours_on_image_like(contours,img_orig)
     contours = accepted_contours = filter_contours_by_area(contours)
+    img_with_contours_accepted = draw_contours_on_image_like(contours,img_orig)
     contours = sorted_contours = sort_contours_by_column_position(contours)
     glyphs = map_contours_to_glyphs(contours, img_orig)
 
-    #print 'there are %d contours' % len(accepted_contours)
-    #showlisthorizontal(glyphs)
-    #showlist((img_orig, img_laplace,img_thresh, img_smooth, img_thresh2,img_open2))
+    print 'there are %d glyphs' % len(glyphs)
+    showlisthorizontal(glyphs)
+    showlist(
+        ( img_orig
+          , img_inverse   
+          , img_thresh_1  
+          , img_rm_lines_h
+          , img_rm_lines_v
+          , img_dilate    
+          , img_laplace   
+          , img_dilate_2  
+          , img_erode     
+          , img_thresh_2  
+          
+          
+          
+          
+          
+          , img_with_contours
+          , img_with_contours_accepted
+        ))
 
     return glyphs
 

@@ -4,6 +4,11 @@ import sys
 import numpy as np
 import time
 
+def draw_contours_on_image_like(contours, img_orig):
+    img_blank = np.ones_like(img_orig)*255
+    cv2.drawContours(img_blank,contours,-1,(0,255,0),1)
+    return img_blank
+
 def coordinates_of_contour_center(contour):
     # compute the center of the contour
     M = cv2.moments(contour)
