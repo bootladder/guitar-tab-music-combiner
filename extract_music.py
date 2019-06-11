@@ -88,14 +88,15 @@ def note_head_exists(contours):
         hull = cv2.convexHull(c)
         minCircle = cv2.minEnclosingCircle(c)
         ratio =  (area/(3.14*minCircle[1]*minCircle[1]))
-        #print ratio,  ' is the ratio'
+        print ratio,  ' is the ratio'
         if ratio > 0.50:
             #print 'ZZZPASS'
-            #show(draw_contours_on_image_like([c]), img_orig)
+            #show(draw_contours_on_image_like([c], np.ones((50,50))*255))
             return True
 
-    #print 'ZZZZREJECTED'
-    #show(draw_contours_on_image_like([c]))
+        else:
+            print 'ZZZZREJECTED'
+            show(draw_contours_on_image_like([c], np.ones((200,200))*255))
     return False
 
 
@@ -103,12 +104,11 @@ def boundingslice_contains_note(img_slice):
 
     # Pre Process
     r_orig = r = img_slice
-    r = ~r #do everything with white on black
-    r = remove_lines_horizontal(r)
-    r = remove_lines_vertical(r)
-    r = otsu_thresh(r)
-    r = r_filtered = cv2.dilate(r,kernel_square(3),iterations = 1)
-    #show(r)
+    r = r_inverse = ~r #do everything with white on black
+    r = r_horiz   = remove_lines_horizontal(r)
+    r = r_vert    = remove_lines_vertical(r)
+    r = r_thresh  = binary_thresh(r,200) #SENSITIVE
+    r = r_dilate  = r_filtered = cv2.dilate(r,kernel_square(3),iterations = 1)
 
     # Contours
     contours, hierarchy = cv2.findContours(r,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
@@ -136,6 +136,11 @@ def boundingslice_contains_note(img_slice):
     # Filter:  Check existence of Note Head
     if False == note_head_exists(contours):
         print 'REJECTED: No Note Head Contour Exists'
+        show(r_orig)
+        show(r_horiz)
+        show(r_vert)
+        show(r_thresh)
+        show(r_dilate)
         return False
 
 
@@ -188,17 +193,17 @@ def imgmusic_to_notecoordinates(img):
     contours, hierarchy = cv2.findContours(img,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
     contours_orig = contours
     print 'there are %d TOTAL contours\n\n' %len(contours)
-    #img = img_all_contours = draw_contours_on_image_like(contours)
+    img = img_all_contours = draw_contours_on_image_like(contours, img_orig)
 
     # Circular Contours By Radius of Bounding Circle
     contours = circular_contours = filter_contours_by_radius_of_bounding_circle(contours)
     print 'there are %d CIRUCLAR contours\n\n' %len(contours)
-    #img = img_circular_contours = draw_contours_on_image_like(contours)
+    img = img_circular_contours = draw_contours_on_image_like(contours, img_orig)
 
     # Circular Contours By AREA
     contours = circular_contours_2 = filter_contours_by_area(contours)
     print 'there are %d CIRUCLAR contours\n\n' %len(contours)
-    #img = img_circular_contours_2 = draw_contours_on_image_like(contours)
+    img = img_circular_contours_2 = draw_contours_on_image_like(contours, img_orig)
 
     #######
     # Here we have all the note contours but also some non-notes.
@@ -209,7 +214,7 @@ def imgmusic_to_notecoordinates(img):
     contours = contours_with_notes = filter_contours_by_note_match(contours, img_orig)
     print 'there are %d contours WITH NOTES' % len(contours)
 
-    #img_contours_done = draw_contours_on_image_like(contours)
+    img_contours_done = draw_contours_on_image_like(contours, img_orig)
 
     # Sort Contours by X ie. column index ie. left to right
     contours = contours_sorted = sort_contours_by_column_position(contours)
@@ -221,12 +226,12 @@ def imgmusic_to_notecoordinates(img):
         ,img_rm_lines_v
         ,img_thresh
         #,img_dilate
-    #   ,img_all_contours
-    #    ,img_circular_contours
-    #    ,img_circular_contours_2
-    #    ,img_contours_done
+       ,img_all_contours
+        ,img_circular_contours
+        ,img_circular_contours_2
+        ,img_contours_done
     )
-    #showlist(concat_images)
+    showlist(concat_images)
 
     centers = map_contours_to_center_coordinates(contours)
     return centers
