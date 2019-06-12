@@ -94,26 +94,26 @@ def imgtab_to_glyphs(img):
     glyphs = map_contours_to_glyphs(contours, img_orig)
 
     print 'there are %d glyphs' % len(glyphs)
-    showlisthorizontal(glyphs)
-    showlist(
-        ( img_orig
-          , img_inverse   
-          , img_thresh_1  
-          , img_rm_lines_h
-          , img_rm_lines_v
-          , img_dilate    
-          , img_laplace   
-          , img_dilate_2  
-          , img_erode     
-          , img_thresh_2  
-          
-          
-          
-          
-          
-          , img_with_contours
-          , img_with_contours_accepted
-        ))
+    #showlisthorizontal(glyphs)
+    #showlist(
+    #    ( img_orig
+    #      , img_inverse   
+    #      , img_thresh_1  
+    #      , img_rm_lines_h
+    #      , img_rm_lines_v
+    #      , img_dilate    
+    #      , img_laplace   
+    #      , img_dilate_2  
+    #      , img_erode     
+    #      , img_thresh_2  
+    #      
+    #      
+    #      
+    #      
+    #      
+    #      , img_with_contours
+    #      , img_with_contours_accepted
+    #    ))
 
     return glyphs
 

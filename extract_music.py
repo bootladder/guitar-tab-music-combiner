@@ -141,7 +141,7 @@ def boundingslice_contains_note(img_slice):
     # Filter:  Check existence of Note Head
     if False == note_head_exists(contours):
         print 'REJECTED: No Note Head Contour Exists'
-        showlisthorizontal(p_all(True))
+        #showlisthorizontal(p_all(True))
         return False
 
 
@@ -235,7 +235,7 @@ def imgmusic_to_notecoordinates(img):
         ,img_circular_contours_2
         ,img_contours_done
     )
-    showlist(concat_images)
+    #showlist(concat_images)
 
     centers = map_contours_to_center_coordinates(contours)
     return centers

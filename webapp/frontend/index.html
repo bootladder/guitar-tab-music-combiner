@@ -1,0 +1,177 @@
+<html>
+
+<link type="text/css" rel="stylesheet" media="all" href="cropper.min.css">
+<script src="cropper.min.js" ></script>
+
+<style>
+ body{
+     padding: 0;
+     margin: 0;
+ }
+ #header {
+     border-bottom: 2px solid black;
+     display: flex;
+     justify-content: space-between;
+     height: 40px;
+
+ }
+
+#top-row{
+     display: flex;
+     flex-direction: row;
+}
+
+ #left-side{
+     display: flex;
+     flex-direction: row;
+ }
+ #crop-container{
+     //max-width: 40%;
+     height: 300px;
+ }
+
+ #right-side{
+     display: flex;
+     flex-direction: column;
+ }
+#image-preview {
+    overflow: hidden;
+    width: 100%;
+    height: 200px;
+}
+    img {
+        max-width: 100%;
+    }
+
+</style>
+
+<zcript src="main.js"></script>
+
+<body>
+
+
+    <div id="header" >
+        <div id="leftsquarething">
+        </div>
+        <div id="header-middle" >
+            <div id="header-middle-center" >
+                Hello
+            </div>
+        </div>
+        <div id="rightsquarething">
+        </div>
+    </div>
+
+    <div id="top-row" >
+        <div id="left-side" >
+            <div id="crop-container">
+                <img src="dummy.png" id="image"/>
+                <img src="nothing" id="image2"/>
+            </div>
+
+            <div class="image-select-control">
+                <button class="button"  id="load-file" >Load File </button>
+                <input type="file" onchange="onFileSelected(event)">
+            </div>
+        </div>
+        <div id="right-side">
+            <div id="image-preview" >
+                image-preview
+            </div>
+            <div class="upload-control" >
+                <button class="button" id="upload-combined" >Upload as Combined</button>
+                <button class="button" id="upload-music" >Upload as Music (debug)</button>
+                <button class="button" id="upload-tabs" >Upload as Tabs (debug)</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+    </script>
+
+    <script>
+        // import 'cropperjs/dist/cropper.css';
+        //import Cropper from 'cropperjs';
+
+     function make_cropper(){
+         const image = document.getElementById('image');
+         cropper = new Cropper(image, {
+
+             preview: "#image-preview",
+             //viewMode: 1,
+             crop(event) {
+                 console.log(event.detail.x);
+                 console.log(event.detail.y);
+                 console.log(event.detail.width);
+                 console.log(event.detail.height);
+                 console.log(event.detail.rotate);
+                 console.log(event.detail.scaleX);
+                 console.log(event.detail.scaleY);
+             },
+         });
+
+     }
+     make_cropper()
+
+
+     function onFileSelected(event) {
+
+         console.log("destroying cropper")
+         cropper.destroy() /////////////////////////
+
+         var selectedFile = event.target.files[0];
+         var reader = new FileReader();
+
+         var imgtag = document.getElementById("image");
+         imgtag.title = selectedFile.name;
+         console.log("new title is" + selectedFile.name)
+
+         reader.onload = function(event) {
+             imgtag.src = event.target.result;
+             console.log("updating image source")
+
+            make_cropper()////////////////////////
+         };
+
+         reader.readAsDataURL(selectedFile);
+
+
+     }
+
+
+    </script>
+
+    <script>
+
+     //        const image = document.getElementById('image');
+     //        const cropper = new Cropper(image, {
+     //
+     //            preview: "#image-preview",
+     //            //viewMode: 1,
+     //            crop(event) {
+     //            console.log(event.detail.x);
+     //            console.log(event.detail.y);
+     //            console.log(event.detail.width);
+     //            console.log(event.detail.height);
+     //            console.log(event.detail.rotate);
+     //            console.log(event.detail.scaleX);
+     //            console.log(event.detail.scaleY);
+     //            },
+     //        });
+
+
+    </script>
+
+    <div id="elmapp">aye elm</div>
+    <zcript>
+     var app = Elm.Main.init({
+         node: document.getElementById('elmapp')
+     });
+    </script>
+
+
+    <div id="app"></div>
+</body>
+
+</html>
