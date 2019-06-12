@@ -5,6 +5,11 @@ import numpy as np
 import time
 from myutil import *
 
+p_init = pipeline_init
+p_add = pipeline_add
+p_last = pipeline_last
+p_all = pipeline_all
+
 def filter_contours_by_area(contours):
     areas = []
     for c in contours:
@@ -88,27 +93,31 @@ def note_head_exists(contours):
         hull = cv2.convexHull(c)
         minCircle = cv2.minEnclosingCircle(c)
         ratio =  (area/(3.14*minCircle[1]*minCircle[1]))
-        print ratio,  ' is the ratio'
+        #print ratio,  ' is the ratio'
         if ratio > 0.50:
             #print 'ZZZPASS'
             #show(draw_contours_on_image_like([c], np.ones((50,50))*255))
             return True
 
         else:
-            print 'ZZZZREJECTED'
-            show(draw_contours_on_image_like([c], np.ones((200,200))*255))
+            continue
+            #print 'ZZZZREJECTED'
+            #show(draw_contours_on_image_like([c], np.ones((200,200))*255))
     return False
 
 
 def boundingslice_contains_note(img_slice):
 
-    # Pre Process
-    r_orig = r = img_slice
-    r = r_inverse = ~r #do everything with white on black
-    r = r_horiz   = remove_lines_horizontal(r)
-    r = r_vert    = remove_lines_vertical(r)
-    r = r_thresh  = binary_thresh(r,200) #SENSITIVE
-    r = r_dilate  = r_filtered = cv2.dilate(r,kernel_square(3),iterations = 1)
+    ## Pre Process
+    p_init(img_slice)
+    p_add('inverse',     lambda img: ~img)
+    p_add('horiz',       remove_lines_horizontal)
+    p_add('vert',        remove_lines_vertical)
+    p_add('thresh',      otsu_thresh)
+    p_add('dilate',      lambda img: cv2.dilate(img,kernel_square(3),iterations = 1))
+
+    r = pipeline_last()
+
 
     # Contours
     contours, hierarchy = cv2.findContours(r,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
@@ -117,12 +126,10 @@ def boundingslice_contains_note(img_slice):
     # Filter by Number of Non-Black
     percent_result = check_region_area_threshold(r)
     #print percent_result
-
     if percent_result > 0.24 or percent_result < 0.05:
         print 'REJECTED by Threshold: %f' % percent_result
         #showlisthorizontal((r_orig,np.ones_like(r_orig)*255,r))
         return False
-
 
     # Filter Contours: Remove Rectangular Contours
     # If Contour Area is close to Area of Minimum Bounding Rectangle
@@ -131,16 +138,10 @@ def boundingslice_contains_note(img_slice):
         print 'REJECTED: All Contours Filtered Out'
         return False
 
-
-
     # Filter:  Check existence of Note Head
     if False == note_head_exists(contours):
         print 'REJECTED: No Note Head Contour Exists'
-        #show(r_orig)
-        #show(r_horiz)
-        #show(r_vert)
-        #show(r_thresh)
-        #show(r_dilate)
+        showlisthorizontal(p_all(True))
         return False
 
 
@@ -154,8 +155,10 @@ def contour_to_boundingslice(contour, img):
     #x is column, y is row
     #print 'img size: ',len(img),len(img[0])
 
+    # Add a couple pixels of padding to catch stems on the edges
+
     x,y,w,h = cv2.boundingRect(contour)
-    newRegion = img[0:len(img),x:x+w]  #return slice of entire Height
+    newRegion = img[0:len(img),x-2:x+w+2]  #return slice of entire Height
     return newRegion
 
 
@@ -211,6 +214,7 @@ def imgmusic_to_notecoordinates(img):
     # of the original image that contains the contour,
     # so we have more information to filter out non-notes
 
+    print 'Checking for Note Head'
     contours = contours_with_notes = filter_contours_by_note_match(contours, img_orig)
     print 'there are %d contours WITH NOTES' % len(contours)
 
