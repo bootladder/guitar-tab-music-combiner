@@ -88,6 +88,11 @@
 
     <script>
 
+     var url_combined = 'http://localhost:5000/api/process/combined'
+     var url_music = 'http://localhost:5000/api/process/music'
+     var url_tabs = 'http://localhost:5000/api/process/tabs'
+     var url_upload_image = 'http://localhost:5000/api/upload'
+
      function make_cropper(){
          const image = document.getElementById('image');
          cropper = new Cropper(image, {
@@ -112,6 +117,7 @@
      var image_base64_encoded = "fuck"
 
      function onFileSelected(event) {
+         console.log('watqqqqqqqqq')
 
          cropper.destroy() /////////////////////////
 
@@ -125,17 +131,16 @@
              imgtag.src = event.target.result;
 
              image_base64_encoded = reader.result;
+             make_cropper()
 
          };
 
          reader.readAsDataURL(selectedFile);
      }
 
-     url_combined = 'http://localhost:5000/api/process/combined'
-     url_music = 'http://localhost:5000/api/process/music'
-     url_tabs = 'http://localhost:5000/api/process/tabs'
-     url_upload_image = 'http://localhost:5000/api/upload'
      document.getElementById("upload-music").addEventListener('click',function(){
+
+         console.log('watzzzzzzzzz')
 
          payload = {
              metadata: cropper.getData(),
