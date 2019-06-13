@@ -83,6 +83,10 @@
                 <button class="button" id="upload-music" >Upload as Music (debug)</button>
                 <button class="button" id="upload-tabs" >Upload as Tabs (debug)</button>
             </div>
+
+            <div id="debug" >
+                <img src="nothing" id="image-debug" />
+            </div>
         </div>
     </div>
 
@@ -92,6 +96,8 @@
      var url_music = 'http://localhost:5000/api/process/music'
      var url_tabs = 'http://localhost:5000/api/process/tabs'
      var url_upload_image = 'http://localhost:5000/api/upload'
+
+     var image_base64_encoded = "fuck"
 
      function make_cropper(){
          const image = document.getElementById('image');
@@ -113,8 +119,7 @@
      }
      make_cropper()
 
-
-     var image_base64_encoded = "fuck"
+     ///// Load File from Local Filesystem ////////////////
 
      function onFileSelected(event) {
          console.log('watqqqqqqqqq')
@@ -145,6 +150,9 @@
          reader.readAsDataURL(selectedFile);
      }
 
+
+     ///// Button Press for Debug          ////////////////
+
      document.getElementById("upload-music").addEventListener('click',function(){
 
          console.log('watzzzzzzzzz')
@@ -154,8 +162,7 @@
              metadata: cropper.getData(),
              image: image_base64_encoded
          }
-         console.log(payload)
-         console.log(JSON.stringify(payload))
+
          fetch(url_music,{
              headers: {
                  'Accept': 'application/json',
@@ -164,8 +171,19 @@
              method: 'POST',
              body: JSON.stringify(payload)
          })
-             .then(data=>console.log('yay'))
-             .catch(err=>console.log(err))
+                .then(response => {
+                    return response.json()
+                })
+                .then(data=>{
+                    console.log(data)
+
+                    var imgtag = document.getElementById("image-debug");
+                    imgtag.title = 'yay'
+                    imgtag.src = 'data:image/png;base64,' + data.image
+                    //
+                    //'data:image/png;base64,' + imgString
+                })
+                .catch(err=>console.log(err))
 
      })
 
