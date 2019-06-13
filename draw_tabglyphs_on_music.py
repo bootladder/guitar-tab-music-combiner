@@ -27,7 +27,7 @@ def draw_tabglyphs_on_music(img_music, img_tab):
     print 'Found ', len(glyphs), ' tab notes and ',len(coords), 'music notes'
     if len(glyphs) != len(coords):
         print 'NOT THE SAME!!'
-        sys.exit(1)
+        return 'nothing?'
 
 
     for i in range(0,len(coords)):

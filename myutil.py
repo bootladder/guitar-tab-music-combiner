@@ -6,6 +6,11 @@ import time
 from collections import Counter
 
 
+########## 
+
+
+########## PIPELINE
+
 pipeline = []
 def pipeline_init(img_orig):
     global pipeline
@@ -194,6 +199,10 @@ def sort_contours_by_column_position(contours):
     return [t[0] for t in tuples]
 
 
+
+########## FILTERING 
+
+
 # Open Square
 def morph_open_square(img, n):
     kernel = np.ones((n,n),np.uint8)
@@ -312,6 +321,7 @@ def extract_lines_horizontal(img):
     return img_thresh
 
 
+########## DRAWING
 
 
 def show(img):

@@ -52,7 +52,74 @@ def api_upload():
 
 
 
+def crop_image(img, cropbox):
 
+    x      = int(cropbox['x']     )
+    y      = int(cropbox['y']     )
+    width  = int(cropbox['width'] )
+    height = int(cropbox['height'])
+
+    # cropbox is x and y, img is row and column
+    newimg = img[y:y+height, x:x+width]
+    return newimg
+
+
+def split_image_top_bottom(img):
+    num_rows = len(img)
+    img_top = img[0:(num_rows/2) , :]
+    img_bot = img[(num_rows/2) : num_rows , :]
+    return img_top,img_bot
+
+
+@app.route('/api/process/combined', methods = ['POST'])
+def api_process_combined():
+
+    if False == request.is_json:
+        flaskprint('no json')
+        flaskprint(request)
+        return 'not a json'
+    requestjson = request.get_json()
+    if 'image' not in requestjson:
+        flaskprint('no image')
+        return 'no image'
+    if 'metadata' not in requestjson:
+        flaskprint('no metadata')
+        return 'no metadata'
+
+    cropbox = requestjson['metadata']
+    cropbox_x = cropbox['x']
+    cropbox_y = cropbox['y']
+    cropbox_width = cropbox['width']
+    cropbox_height = cropbox['height']
+
+    flaskprint("%f %f %f %f"%(cropbox_x, cropbox_y, cropbox_width, cropbox_height))
+
+    # base64 -> img
+    imgbase64 = requestjson['image']
+    nparr = np.fromstring(imgbase64.decode('base64'), np.uint8)
+    img_music = cv2.imdecode(nparr, 0)
+
+    # crop image
+    img_music_cropped = crop_image(img_music, cropbox)
+
+    # Split Image in Half, top and bottom
+    img_split_top, img_split_bottom = split_image_top_bottom(img_music_cropped)
+
+    # process
+    centers = imgmusic_to_notecoordinates(img_split_top)
+    glyphs  = imgtab_to_glyphs(img_split_bottom)
+
+    img_result = draw_tabglyphs_on_music(img_split_top, img_split_bottom)
+
+    # img -> base64
+    status, img_png = cv2.imencode(".png", img_result)
+    encoded = base64.b64encode(img_png)
+
+    d = dict()
+    d['yay'] = 'yay'
+    d['image'] = encoded
+
+    return jsonify(d)
 
 
 
@@ -67,18 +134,32 @@ def api_process():
     if 'image' not in requestjson:
         flaskprint('no image')
         return 'no image'
+    if 'metadata' not in requestjson:
+        flaskprint('no metadata')
+        return 'no metadata'
 
-    flaskprint(requestjson['metadata'])
+    cropbox = requestjson['metadata']
+    cropbox_x = cropbox['x']
+    cropbox_y = cropbox['y']
+    cropbox_width = cropbox['width']
+    cropbox_height = cropbox['height']
 
+    flaskprint("%f %f %f %f"%(cropbox_x, cropbox_y, cropbox_width, cropbox_height))
+
+    # base64 -> img
     imgbase64 = requestjson['image']
-
     nparr = np.fromstring(imgbase64.decode('base64'), np.uint8)
     img_music = cv2.imdecode(nparr, 0)
 
-    img_result = imgmusic_preprocess(img_music)
+    # crop image
+    img_music_cropped = crop_image(img_music, cropbox)
 
+    # process
+    img_result = imgmusic_preprocess(img_music_cropped)
+
+
+    # img -> base64
     status, img_png = cv2.imencode(".png", img_result)
-
     encoded = base64.b64encode(img_png)
 
     d = dict()
@@ -86,7 +167,6 @@ def api_process():
     d['image'] = encoded
 
     return jsonify(d)
-    #return request.get_json()
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
