@@ -28,6 +28,45 @@ def download_image(path):
         as_attachment=True,
         attachment_filename='%s.png' % 'yay')
 
+@app.route('/api/upload', methods = ['POST'])
+def api_upload():
+
+    flaskprint(request.files)
+    if 'image' not in request.files:
+        flaskprint('no image')
+        return "not in there"
+    flaskprint('\n\nrequest.files:  ' + request.files['file'].filename )
+    #f = request.files.values()[0]
+    f = request.files['file']
+    pathtofile = '/tmp/yay'
+    f.save(pathtofile)
+    flaskprint('[route] Received a File, saved blob to'+pathtofile+'\n')
+    return 'aye'
+
+
+
+
+
+
+
+
+
+
+
+
+@app.route('/api/process/music', methods = ['POST'])
+def api_process():
+
+    if False == request.is_json:
+        flaskprint('no json')
+        return 'not a json'
+    requestjson = request.get_json()
+    if 'image' not in requestjson:
+        flaskprint('no image')
+        return 'no image'
+
+    return request.get_json()
+
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def hello_worldz(path):
