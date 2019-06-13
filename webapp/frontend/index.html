@@ -54,9 +54,9 @@
                 <p>Tablature-Music Combiner</p>
                 <ol>
                     <li>Select an Image</li>
-                    <li>Select a Region</li>
-                    <li>Press "Write to Image"</li>
-                    <li>Press "Save Image"</li>
+                    <li>Select a Region and Press "Upload"</li>
+                    <li>If the result is good, Press "Write to Image" to Update the Image with the Result</li>
+                    <li>When Finished, Press "Save Image to Disk"</li>
                 </ol>
             </div>
         </div>
@@ -72,7 +72,6 @@
             </div>
 
             <div class="image-select-control">
-                <button class="button"  id="upload-image" >Upload Image </button>
                 <input type="file" id="input-file" onchange="onFileSelected(event)">
             </div>
         </div>
@@ -93,6 +92,11 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <div id="second-row" >
+        <button class="button"  id="write-image-buffer" >Update Image Buffer</button>
+        <button class="button"  id="save-image" >Save Image to Disk</button>
     </div>
 
     <script>
