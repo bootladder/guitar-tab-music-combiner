@@ -12,8 +12,6 @@
      border-bottom: 2px solid black;
      display: flex;
      justify-content: space-between;
-     height: 40px;
-
  }
 
 #top-row{
@@ -23,7 +21,7 @@
 
  #left-side{
      display: flex;
-     flex-direction: row;
+     flex-direction: column-reverse;
  }
  #crop-container{
      //max-width: 40%;
@@ -45,8 +43,6 @@
 
 </style>
 
-<zcript src="main.js"></script>
-
 <body>
 
 
@@ -55,7 +51,13 @@
         </div>
         <div id="header-middle" >
             <div id="header-middle-center" >
-                Hello
+                <p>Tablature-Music Combiner</p>
+                <ol>
+                    <li>Select an Image</li>
+                    <li>Select a Region</li>
+                    <li>Press "Write to Image"</li>
+                    <li>Press "Save Image"</li>
+                </ol>
             </div>
         </div>
         <div id="rightsquarething">
@@ -86,6 +88,9 @@
 
             <div id="debug" >
                 <img src="nothing" id="image-debug" />
+                <div id="debug-message" >
+                    Ready...
+                </div>
             </div>
         </div>
     </div>
@@ -97,7 +102,7 @@
      var url_tabs = 'http://localhost:5000/api/process/tabs'
      var url_upload_image = 'http://localhost:5000/api/upload'
 
-     var image_base64_encoded = "fuck"
+     var image_base64_encoded = "DEFAULT: no image yet"
 
      function make_cropper(){
          const image = document.getElementById('image');
@@ -135,7 +140,6 @@
          reader.onload = function(event) {
              imgtag.src = event.target.result;
 
-             //image_base64_encoded = reader.result;
              let encoded = reader.result.replace(/^data:(.*;base64,)?/, '');
              if ((encoded.length % 4) > 0) {
                  encoded += '='.repeat(4 - (encoded.length % 4));
@@ -143,7 +147,7 @@
 
              image_base64_encoded = encoded
 
-             make_cropper()
+             make_cropper() ////////////////////////////////////
 
          };
 
@@ -214,8 +218,9 @@
                     var imgtag = document.getElementById("image-debug");
                     imgtag.title = 'yay'
                     imgtag.src = 'data:image/png;base64,' + data.image
-                    //
-                    //'data:image/png;base64,' + imgString
+
+                    message_div = document.getElementById("debug-message")
+                    message_div.innerHTML = data.message
                 })
                 .catch(err=>console.log(err))
 
@@ -225,37 +230,6 @@
 
 
     </script>
-
-    <script>
-
-     //        const image = document.getElementById('image');
-     //        const cropper = new Cropper(image, {
-     //
-     //            preview: "#image-preview",
-     //            //viewMode: 1,
-     //            crop(event) {
-     //            console.log(event.detail.x);
-     //            console.log(event.detail.y);
-     //            console.log(event.detail.width);
-     //            console.log(event.detail.height);
-     //            console.log(event.detail.rotate);
-     //            console.log(event.detail.scaleX);
-     //            console.log(event.detail.scaleY);
-     //            },
-     //        });
-
-
-    </script>
-
-    <div id="elmapp">aye elm</div>
-    <zcript>
-     var app = Elm.Main.init({
-         node: document.getElementById('elmapp')
-     });
-    </script>
-
-
-    <div id="app"></div>
 </body>
 
 </html>

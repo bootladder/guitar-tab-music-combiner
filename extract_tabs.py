@@ -5,6 +5,11 @@ import numpy as np
 import time
 from myutil import *
 
+p_init = pipeline_init
+p_add = pipeline_add
+p_last = pipeline_last
+p_all = pipeline_all
+
 
 
 def filter_contours_by_area(contours):
@@ -62,6 +67,24 @@ def map_contours_to_glyphs(contours, img):
 
 
 #################################################################
+
+def imgtab_preprocess(img):
+
+    p_init(img)
+    p_add('img_inverse   '   , lambda img: ~img)
+    p_add('img_thresh_1  '   , otsu_thresh)
+    p_add('img_rm_lines_h'   , remove_lines_horizontal)
+    p_add('img_rm_lines_v'   , remove_lines_vertical)
+    p_add('img_dilate    '   , lambda img: cv2.dilate(img,kernel_square(3),iterations = 1))
+    p_add('img_laplace   '   , laplace)
+    p_add('img_dilate_2  '   , lambda img: cv2.dilate(img,kernel_square(3),iterations = 1))
+    p_add('img_erode     '   , lambda img: cv2.erode(img,kernel_square(3),iterations = 1))
+    p_add('img_thresh_2  '   , otsu_thresh)
+
+    img = pipeline_last()
+    return img
+
+
 
 
 def imgtab_to_glyphs(img):

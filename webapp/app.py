@@ -105,11 +105,20 @@ def api_process_combined():
     # Split Image in Half, top and bottom
     img_split_top, img_split_bottom = split_image_top_bottom(img_music_cropped)
 
-    # process
-    centers = imgmusic_to_notecoordinates(img_split_top)
-    glyphs  = imgtab_to_glyphs(img_split_bottom)
+    ## process
+    #centers = imgmusic_to_notecoordinates(img_split_top)
+    #glyphs  = imgtab_to_glyphs(img_split_bottom)
 
-    img_result = draw_tabglyphs_on_music(img_split_top, img_split_bottom)
+    try:
+        img_result = draw_tabglyphs_on_music(img_split_top, img_split_bottom)
+        message = "Great Result!"
+
+    except:
+        img_music_processed = imgmusic_preprocess(img_split_top)
+        img_tab_processed   = imgtab_preprocess(img_split_bottom)
+        img_result = np.concatenate((img_music_processed, img_tab_processed), axis=0)
+        message = "fail... maybe this helps?"
+
 
     # img -> base64
     status, img_png = cv2.imencode(".png", img_result)
@@ -117,6 +126,7 @@ def api_process_combined():
 
     d = dict()
     d['yay'] = 'yay'
+    d['message'] = message
     d['image'] = encoded
 
     return jsonify(d)
