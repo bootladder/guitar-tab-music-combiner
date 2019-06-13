@@ -75,13 +75,17 @@ def api_process():
     nparr = np.fromstring(imgbase64.decode('base64'), np.uint8)
     img_music = cv2.imdecode(nparr, 0)
 
-    centers = imgmusic_to_notecoordinates(img_music)
+    img_result = imgmusic_preprocess(img_music)
 
-    flaskprint(centers)
-    #status, img_png = cv2.imencode(".png", img_result)
+    status, img_png = cv2.imencode(".png", img_result)
 
+    encoded = base64.b64encode(img_png)
 
-    return 'haha'
+    d = dict()
+    d['yay'] = 'yay'
+    d['image'] = encoded
+
+    return jsonify(d)
     #return request.get_json()
 
 @app.route('/', defaults={'path': ''})

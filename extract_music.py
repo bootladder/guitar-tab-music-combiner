@@ -183,14 +183,38 @@ def map_contours_to_center_coordinates(contours):
 
 #################################################################
 
+def imgmusic_preprocess(img):
+    # Pre Process
+    p_init(img)
+    p_add('inverse',     lambda img: ~img)
+    p_add('horiz',       remove_lines_horizontal)
+    p_add('vert',        remove_lines_vertical)
+    p_add('thresh',      otsu_thresh)
+
+    img = pipeline_last()
+    return img
+
+
 def imgmusic_to_notecoordinates(img):
     # Pre Process
     img_orig = img
-    img = ~img #do everything with white on black
-    img = img_rm_lines_h  = remove_lines_horizontal(img)
-    img = img_rm_lines_v  = remove_lines_vertical(img)
-    img = img_thresh      = otsu_thresh(img)
-    #img = img_dilate      = cv2.dilate(img,kernel_square(3),iterations = 1)
+    #img = ~img #do everything with white on black
+    #img = img_rm_lines_h  = remove_lines_horizontal(img)
+    #img = img_rm_lines_v  = remove_lines_vertical(img)
+    #img = img_thresh      = otsu_thresh(img)
+    ##img = img_dilate      = cv2.dilate(img,kernel_square(3),iterations = 1)
+
+
+    # Pre Process
+    p_init(img_orig)
+    p_add('inverse',     lambda img: ~img)
+    p_add('horiz',       remove_lines_horizontal)
+    p_add('vert',        remove_lines_vertical)
+    p_add('thresh',      otsu_thresh)
+
+    img = pipeline_last()
+
+
 
     # Get All Contours
     contours, hierarchy = cv2.findContours(img,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
@@ -223,19 +247,19 @@ def imgmusic_to_notecoordinates(img):
     # Sort Contours by X ie. column index ie. left to right
     contours = contours_sorted = sort_contours_by_column_position(contours)
 
-    concat_images = \
-    (
-        img_orig
-        ,img_rm_lines_h
-        ,img_rm_lines_v
-        ,img_thresh
-        #,img_dilate
-       ,img_all_contours
-        ,img_circular_contours
-        ,img_circular_contours_2
-        ,img_contours_done
-    )
-    #showlist(concat_images)
+    #concat_images = \
+    #(
+    #    img_orig
+    #    ,img_rm_lines_h
+    #    ,img_rm_lines_v
+    #    ,img_thresh
+    #    #,img_dilate
+    #   ,img_all_contours
+    #    ,img_circular_contours
+    #    ,img_circular_contours_2
+    #    ,img_contours_done
+    #)
+    ##showlist(concat_images)
 
     centers = map_contours_to_center_coordinates(contours)
     return centers
