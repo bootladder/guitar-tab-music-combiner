@@ -4,6 +4,7 @@ import flask
 from flask import * #Flask, render_template, request, send_from_directory
 from flask_cors import CORS, cross_origin
 import io
+import base64
 
 ########IPMORTS
 sys.path.append('..')
@@ -54,18 +55,34 @@ def api_upload():
 
 
 
+
 @app.route('/api/process/music', methods = ['POST'])
 def api_process():
 
     if False == request.is_json:
         flaskprint('no json')
+        flaskprint(request)
         return 'not a json'
     requestjson = request.get_json()
     if 'image' not in requestjson:
         flaskprint('no image')
         return 'no image'
 
-    return request.get_json()
+    flaskprint(requestjson['metadata'])
+
+    imgbase64 = requestjson['image']
+
+    nparr = np.fromstring(imgbase64.decode('base64'), np.uint8)
+    img_music = cv2.imdecode(nparr, 0)
+
+    centers = imgmusic_to_notecoordinates(img_music)
+
+    flaskprint(centers)
+    #status, img_png = cv2.imencode(".png", img_result)
+
+
+    return 'haha'
+    #return request.get_json()
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')

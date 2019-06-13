@@ -130,7 +130,14 @@
          reader.onload = function(event) {
              imgtag.src = event.target.result;
 
-             image_base64_encoded = reader.result;
+             //image_base64_encoded = reader.result;
+             let encoded = reader.result.replace(/^data:(.*;base64,)?/, '');
+             if ((encoded.length % 4) > 0) {
+                 encoded += '='.repeat(4 - (encoded.length % 4));
+             }
+
+             image_base64_encoded = encoded
+
              make_cropper()
 
          };
@@ -143,13 +150,19 @@
          console.log('watzzzzzzzzz')
 
          payload = {
+             hello: 'hello',
              metadata: cropper.getData(),
              image: image_base64_encoded
          }
          console.log(payload)
+         console.log(JSON.stringify(payload))
          fetch(url_music,{
+             headers: {
+                 'Accept': 'application/json',
+                 'Content-Type': 'application/json'
+             },
              method: 'POST',
-             data: JSON.stringify(payload)
+             body: JSON.stringify(payload)
          })
              .then(data=>console.log('yay'))
              .catch(err=>console.log(err))
