@@ -14,8 +14,8 @@ app = Flask(__name__)
 
 webroot = 'frontend'
 
-@app.route('/download/<path:path>')
-def download_image(path):
+@app.route('/not_download/<path:path>')
+def not_download_image(path):
     flaskprint('path: ' + path)
 
     img_music =  cv2.imread('input/music1.png',0)
@@ -45,8 +45,35 @@ def api_upload():
     return 'aye'
 
 
+@app.route('/api/download_link', methods = ['GET'])
+def wtf2_download():
+      return send_from_directory(webroot, 'output.png')
 
 
+@app.route('/api/download', methods = ['POST'])
+def api_download():
+    if False == request.is_json:
+        flaskprint('no json')
+        flaskprint(request)
+        return 'not a json'
+    requestjson = request.get_json()
+    if 'image' not in requestjson:
+        flaskprint('no image')
+        return 'no image'
+
+    # base64 -> img
+    imgbase64 = requestjson['image']
+    nparr = np.fromstring(imgbase64.decode('base64'), np.uint8)
+    img_music = cv2.imdecode(nparr, 0)
+
+    # img -> base64
+    s, img_png = cv2.imencode(".png", img_music)
+
+    return send_file(
+        io.BytesIO(img_png),
+        mimetype='image/png',
+        as_attachment=True,
+        attachment_filename='%s.png' % 'yay')
 
 
 
@@ -59,9 +86,38 @@ def crop_image(img, cropbox):
     width  = int(cropbox['width'] )
     height = int(cropbox['height'])
 
+    flaskprint("CROPPING:  WIDTH HEIGHT OF BOX: %d %d "%(width,height))
+
     # cropbox is x and y, img is row and column
     newimg = img[y:y+height, x:x+width]
+
+
+    flaskprint("CROPPED:  LEN OF NEWIMG : %d %d "%(len(newimg),len(newimg[0])))
+
     return newimg
+
+
+
+def draw_combined_over_original(img_small, img_large, cropbox):
+
+    x      = int(cropbox['x']     )
+    y      = int(cropbox['y']     )
+
+    #dimension of small image, because it's only the top half (the music) that gets pasted
+    width  = len(img_small[0])
+    height = len(img_small)
+
+
+    flaskprint("CROP BOXSIZE: ")
+    flaskprint("%d %d %d %d"%(x,y,width,height))
+
+    flaskprint("IMG SMALL SIZE: ")
+    flaskprint("%d %d "%(len(img_small),len(img_small[0])))
+
+    img_large[y:y+height, x:x+width] = img_small
+    return img_large
+
+
 
 
 def split_image_top_bottom(img):
@@ -99,35 +155,42 @@ def api_process_combined():
     nparr = np.fromstring(imgbase64.decode('base64'), np.uint8)
     img_music = cv2.imdecode(nparr, 0)
 
-    # crop image
+    # Crop
     img_music_cropped = crop_image(img_music, cropbox)
 
     # Split Image in Half, top and bottom
     img_split_top, img_split_bottom = split_image_top_bottom(img_music_cropped)
 
-    ## process
-    #centers = imgmusic_to_notecoordinates(img_split_top)
-    #glyphs  = imgtab_to_glyphs(img_split_bottom)
-
+    # Process
     try:
-        img_result = draw_tabglyphs_on_music(img_split_top, img_split_bottom)
+        img_result       = draw_tabglyphs_on_music(img_split_top, img_split_bottom)
+        img_orig_updated = draw_combined_over_original(img_result, img_music, cropbox)
+
+        cv2.imwrite("frontend/output.png",img_orig_updated)
+
         message = "Great Result!"
+        status = "OK"
 
     except:
         img_music_processed = imgmusic_preprocess(img_split_top)
         img_tab_processed   = imgtab_preprocess(img_split_bottom)
         img_result = np.concatenate((img_music_processed, img_tab_processed), axis=0)
+        img_orig_updated = img_result
         message = "fail... maybe this helps?"
+        status = "FAIL"
 
 
     # img -> base64
-    status, img_png = cv2.imencode(".png", img_result)
-    encoded = base64.b64encode(img_png)
+    s, img_result_png = cv2.imencode(".png", img_result)
+    image_result_encoded = base64.b64encode(img_result_png)
+    s, img_orig_updated_png = cv2.imencode(".png", img_orig_updated)
+    image_orig_updated_encoded = base64.b64encode(img_orig_updated_png)
 
     d = dict()
-    d['yay'] = 'yay'
+    d['status'] = status
     d['message'] = message
-    d['image'] = encoded
+    d['image'] = image_result_encoded
+    d['image_updated'] = image_orig_updated_encoded
 
     return jsonify(d)
 
