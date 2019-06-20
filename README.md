@@ -1,7 +1,7 @@
 # Guitar Tab Overlayer
 
 ![alt text](https://user-images.githubusercontent.com/28636252/59810835-133d8900-92d5-11e9-913b-a6e3963d9699.png)
-![alt text](https://user-images.githubusercontent.com/28636252/59811135-8267ad00-92d6-11e9-8907-a9f243a02756.png)
+![alt text](https://user-images.githubusercontent.com/28636252/59811135-8267ad00-92d6-11e9-8907-a9f243a02756.png))
 
 It scans the tabs and the music, and pastes the numbers over the note heads.  
 
