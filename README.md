@@ -10,15 +10,17 @@
 * It writes over the original image and you keep going
 * When finished, you download the image with all the changes.
 
+# Usage
+`docker-compose up` should do the trick
 
 ## TODO ##
 
--- Monophonic only, ie. no chords.  1 note at a time.
--- Half Notes and Whole Notes don't work
--- Double Digit numbers in tabs don't work
--- Only works on fully cropped images ie. with no noise above and below the staff.
--- Only works with completely horizontal staff lines
--- Single digit tabs only.  ie. Frets 10 and above will not be recognized
+* Monophonic only, ie. no chords.  1 note at a time.
+* Half Notes and Whole Notes don't work
+* Double Digit numbers in tabs don't work
+* Only works on fully cropped images ie. with no noise above and below the staff.
+* Only works with completely horizontal staff lines
+* Single digit tabs only.  ie. Frets 10 and above will not be recognized
 
 # Convert pdf to image
 **so you can rip pages out of pdfs to feed into this**
