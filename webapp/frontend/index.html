@@ -25,7 +25,7 @@
  }
  #crop-container{
      //max-width: 40%;
-     height: 300px;
+     //height: 300px;
  }
 
  #right-side{
@@ -113,8 +113,8 @@
          cropper = new Cropper(image, {
 
              preview: "#image-preview",
-            initialAspectRatio: 4,
-             //viewMode: 1,
+             initialAspectRatio: 4,
+             viewMode: 3,
              crop(event) {
                  console.log(event.detail.x);
                  console.log(event.detail.y);
@@ -247,30 +247,6 @@
 
      })
 
-
-
-     ///// Button Press for SAVE TO DISK          ////////////////
-
-
-     // Use an API endpoint for donwloading, to upload the file then download it agian
-     document.getElementById("save-image").addEventListener('click',function(){
-         console.log("BLAH")
-
-         payload = {
-             image: image_base64_encoded
-         }
-         fetch(url_download,{
-             headers: {
-                 'Accept': 'application/json',
-                 'Content-Type': 'application/json'
-             },
-             method: 'POST',
-             body: JSON.stringify(payload)
-         })
-
-
-
-     })
 
 
 
