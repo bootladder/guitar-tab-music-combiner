@@ -1,4 +1,8 @@
-from python
+from python:2.7
 
 RUN pip install opencv-python
-RUN pip --default-timeout=1000 install matplotlib
+RUN pip install flask
+
+# run app
+WORKDIR /opt/app/webapp
+CMD ["python","-u","app.py"]

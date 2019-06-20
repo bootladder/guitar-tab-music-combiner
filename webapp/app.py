@@ -1,8 +1,7 @@
 from __future__ import print_function
 import sys
 import flask
-from flask import * #Flask, render_template, request, send_from_directory
-from flask_cors import CORS, cross_origin
+from flask import *
 import io
 import base64
 

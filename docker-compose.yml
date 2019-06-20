@@ -1,0 +1,9 @@
+version: '2'
+services:
+  guitar-tab-overlayer:
+    container_name: guitar-tab-overlayer
+    build: .
+    ports: 
+      - "5000:5000"
+    volumes:
+      - ./:/opt/app
