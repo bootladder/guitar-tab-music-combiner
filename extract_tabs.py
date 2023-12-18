@@ -116,7 +116,7 @@ def imgtab_to_glyphs(img):
     contours = sorted_contours = sort_contours_by_column_position(contours)
     glyphs = map_contours_to_glyphs(contours, img_orig)
 
-    print 'there are %d glyphs' % len(glyphs)
+    print('there are %d glyphs' % len(glyphs))
     #showlisthorizontal(glyphs)
     #showlist(
     #    ( img_orig

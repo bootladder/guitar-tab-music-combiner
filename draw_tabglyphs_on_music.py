@@ -24,9 +24,9 @@ def draw_tabglyphs_on_music(img_music, img_tab):
     glyphs = imgtab_to_glyphs(img_tab)
     coords = imgmusic_to_notecoordinates(img_music)
 
-    print 'Found ', len(glyphs), ' tab notes and ',len(coords), 'music notes'
+    print('Found ', len(glyphs), ' tab notes and ',len(coords), 'music notes')
     if len(glyphs) != len(coords):
-        print 'NOT THE SAME!!'
+        print('NOT THE SAME!!')
         raise Exception("number of notes and tabs not the same")
 
 

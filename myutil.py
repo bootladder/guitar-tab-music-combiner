@@ -36,7 +36,7 @@ def pipeline_get(name, annotate=False):
             img = d['img']
             name = d['name']
             if annotate == True:
-                print 'yay'
+                print('yay')
                 img = put_text(img,name)
             return img
     return pipeline[0]['key_error']

@@ -1,7 +1,7 @@
-from python:2.7
+from python:3.7
 
-RUN pip install opencv-python
-RUN pip install flask
+RUN pip3 install opencv-python
+RUN pip3 install flask
 
 # run app
 WORKDIR /opt/app/webapp
